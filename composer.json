@@ -21,8 +21,7 @@
         "symfony/framework-bundle": "2.*",
         "symfony/class-loader": "2.*",
         "symfony/yaml": "2.*",
-        "symfony/monolog-bundle": "2.*",
-        "symfony/twig-bundle": "2.*"
+        "symfony/monolog-bundle": "2.*"
     },
     "autoload": {
         "psr-0": { "CarnegieLearning\\LdapOrmBundle": "" }
