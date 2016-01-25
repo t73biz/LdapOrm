@@ -1,10 +1,10 @@
 <?php
 
-namespace Ucsf\LdapOrmBundle\Entity\Ldap;
+namespace CarnegieLearning\LdapOrmBundle\Entity\Ldap;
 
 use Doctrine\ORM\Mapping as ORM;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\ArrayField;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\Attribute;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ArrayField;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Attribute;
 
 /**
  * A superclass for GroupOfEntries and GroupOfNames

@@ -19,7 +19,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                   *
  ***************************************************************************/
 
-namespace Ucsf\LdapOrmBundle\Entity;
+namespace CarnegieLearning\LdapOrmBundle\Entity;
 
 /**
  * Class used to Decorate DateTime objects (and permits them to be printed)

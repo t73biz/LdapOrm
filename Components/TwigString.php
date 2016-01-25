@@ -6,7 +6,7 @@
  * Time: 11:39 PM
  */
 
-namespace Ucsf\LdapOrmBundle\Components;
+namespace CarnegieLearning\LdapOrmBundle\Components;
 
 
 class TwigString implements \Twig_LoaderInterface{

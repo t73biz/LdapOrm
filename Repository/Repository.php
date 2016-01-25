@@ -20,11 +20,11 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                   *
  * ************************************************************************* */
 
-namespace Ucsf\LdapOrmBundle\Repository;
+namespace CarnegieLearning\LdapOrmBundle\Repository;
 
-use Ucsf\LdapOrmBundle\Ldap\LdapEntityManager;
-use Ucsf\LdapOrmBundle\Mapping\ClassMetaDataCollection;
-use Ucsf\LdapOrmBundle\Ldap\Filter\LdapFilter;
+use CarnegieLearning\LdapOrmBundle\Ldap\LdapEntityManager;
+use CarnegieLearning\LdapOrmBundle\Mapping\ClassMetaDataCollection;
+use CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter;
 
 /**
  * Repository for fetching ldap entity
@@ -233,7 +233,7 @@ class Repository {
      * @param $filterArray
      * @param null $attributes
      * @return string LDAP filter string
-     * @see \Ucsf\LdapOrmBundle\Ldap\Filter\LdapFilter::createComplexLdapFilter($mixed)
+     * @see \CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter::createComplexLdapFilter($mixed)
      */
     public function findByComplex($filterArray, $attributes = null) {
         return $this->em->retrieve(

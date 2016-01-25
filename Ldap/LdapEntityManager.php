@@ -19,31 +19,31 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                   *
  ***************************************************************************/
  
-namespace Ucsf\LdapOrmBundle\Ldap;
+namespace CarnegieLearning\LdapOrmBundle\Ldap;
 
 use DateTime;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\ORM\EntityRepository;
 use Exception;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\ArrayField;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\Attribute;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\Dn;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\DnLinkArray;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\DnPregMatch;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\Must;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\ObjectClass;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\ParentDn;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\Repository as RepositoryAttribute;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\SearchDn;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\Operational;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\Sequence;
-use Ucsf\LdapOrmBundle\Components\GenericIterator;
-use Ucsf\LdapOrmBundle\Components\TwigString;
-use Ucsf\LdapOrmBundle\Entity\DateTimeDecorator;
-use Ucsf\LdapOrmBundle\Ldap\Converter;
-use Ucsf\LdapOrmBundle\Ldap\Filter\LdapFilter;
-use Ucsf\LdapOrmBundle\Mapping\ClassMetaDataCollection;
-use Ucsf\LdapOrmBundle\Repository\Repository;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ArrayField;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Attribute;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Dn;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\DnLinkArray;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\DnPregMatch;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Must;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ObjectClass;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ParentDn;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Repository as RepositoryAttribute;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\SearchDn;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Operational;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Sequence;
+use CarnegieLearning\LdapOrmBundle\Components\GenericIterator;
+use CarnegieLearning\LdapOrmBundle\Components\TwigString;
+use CarnegieLearning\LdapOrmBundle\Entity\DateTimeDecorator;
+use CarnegieLearning\LdapOrmBundle\Ldap\Converter;
+use CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter;
+use CarnegieLearning\LdapOrmBundle\Mapping\ClassMetaDataCollection;
+use CarnegieLearning\LdapOrmBundle\Repository\Repository;
 use ReflectionClass;
 use Symfony\Bridge\Monolog\Logger;
 
@@ -289,7 +289,7 @@ class LdapEntityManager
                     $sequence = $this->renderString($instanceMetadataCollection->getSequence($instanceMetadataCollection->getKey($varname)), array(
                         'entity' => $instance,
                         /*
-                         * In the original source code for the bundle upon which UcsfLdapOrm is based, it was
+                         * In the original source code for the bundle upon which CarnegieLearningLdapOrm is based, it was
                          * assumed that you'd only be looking for records under a single base DN. Therefore,
                          * configuration for the DN was put into configuration files. This bundle permits you to
                          * search any number of base DNsw

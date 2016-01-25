@@ -19,9 +19,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                   *
  ***************************************************************************/
  
-namespace Ucsf\LdapOrmBundle\Ldap;
+namespace CarnegieLearning\LdapOrmBundle\Ldap;
 
-use Ucsf\LdapOrmBundle\Entity\DateTimeDecorator;
+use CarnegieLearning\LdapOrmBundle\Entity\DateTimeDecorator;
 
 /**
  * Converter for LDAP
@@ -32,7 +32,7 @@ use Ucsf\LdapOrmBundle\Entity\DateTimeDecorator;
 class Converter
 {
     // round((1970-1601)/4) = round(92.25) = 92
-    const UNIX_EPOCH_DIFFERENCE = ((1970-1601) * 365 - 3 + 92 ) * 86400;
+    const UNIX_EPOCH_DIFFERENCE = 11644473600; //(((1970-1601) * 365 - 3 + 92 ) * 86400);
 
     /**
      * Convert an LDAP-Generalized-Time-entry into a DateTimeDecorator-Object

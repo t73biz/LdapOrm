@@ -19,9 +19,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                   *
  ***************************************************************************/
  
-namespace Ucsf\LdapOrmBundle\Ldap\Filter;
+namespace CarnegieLearning\LdapOrmBundle\Ldap\Filter;
 
-use Ucsf\LdapOrmBundle\Exception\Filter\InvalidLdapFilterException;
+use CarnegieLearning\LdapOrmBundle\Exception\Filter\InvalidLdapFilterException;
 
 class LdapFilter
 {

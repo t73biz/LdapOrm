@@ -1,6 +1,6 @@
 <?php
 
-namespace Ucsf\LdapOrmBundle\Tests;
+namespace CarnegieLearning\LdapOrmBundle\Tests;
 
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\HttpKernelInterface;

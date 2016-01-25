@@ -1,12 +1,12 @@
 <?php
 
-namespace Ucsf\LdapOrmBundle\Entity\Ldap;
+namespace CarnegieLearning\LdapOrmBundle\Entity\Ldap;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\Mapping as ORM;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\ArrayField;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\Attribute;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\Must;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ArrayField;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Attribute;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Must;
 
 class LdapEntity implements \JsonSerializable {
 

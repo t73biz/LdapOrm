@@ -1,6 +1,6 @@
 <?php
 
-namespace Ucsf\LdapOrmBundle\Annotation\Ldap;
+namespace CarnegieLearning\LdapOrmBundle\Annotation\Ldap;
 
 class BaseAnnotation {
     protected $value;
