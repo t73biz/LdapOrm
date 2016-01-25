@@ -21,6 +21,8 @@
  
 namespace CarnegieLearning\LdapOrmBundle\Ldap;
 
+use CarnegieLearning\LdapOrmBundle\Exception\MissingMustAttributeException;
+use CarnegieLearning\LdapOrmBundle\Exception\MissingSearchDnException;
 use DateTime;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\ORM\EntityRepository;
@@ -40,7 +42,6 @@ use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Sequence;
 use CarnegieLearning\LdapOrmBundle\Components\GenericIterator;
 use CarnegieLearning\LdapOrmBundle\Components\TwigString;
 use CarnegieLearning\LdapOrmBundle\Entity\DateTimeDecorator;
-use CarnegieLearning\LdapOrmBundle\Ldap\Converter;
 use CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter;
 use CarnegieLearning\LdapOrmBundle\Mapping\ClassMetaDataCollection;
 use CarnegieLearning\LdapOrmBundle\Repository\Repository;
@@ -52,82 +53,42 @@ use Symfony\Bridge\Monolog\Logger;
  * 
  * @author Mathieu GOULIN <mathieu.goulin@gadz.org>
  * @author Jason Gabler <jasongabler@gmail.com>
+ * @author Ronald Chaplin <rchaplin@t73.biz>
  */
 class LdapEntityManager
 {
     const DEFAULT_MAX_RESULT_COUNT      = 100;
 
-    private $uri        	= "";
-    private $bindDN     	= "";
-    private $password   	= "";
-    private $passwordType 	= "";
-    private $useTLS     	= FALSE;
-    private $isActiveDirectory = FALSE;
-
-    private $ldapResource;
     private $pageCookie 	= "";
     private $pageMore    	= FALSE;
     private $reader;
     
     private $iterator = Null;
+    /**
+     * @var Client
+     */
+    private $client;
 
     /**
      * Build the Entity Manager service
      *
-     * @param Logger    $logger
-     * @param Reader    $reader
-     * @param array     $config
+     * @param Logger $logger
+     * @param Reader $reader
+     * @param Client $client
      */
-    public function __construct(Logger $logger, Reader $reader, $config)
+    public function __construct(Logger $logger, Reader $reader, Client $client)
     {
-        $this->logger     	    = $logger;
-        $this->reader     	    = $reader;
-        $this->twig       	    = new TwigString();
-        $this->uri        	    = $config['connection']['uri'];
-        $this->bindDN     	    = $config['connection']['bind_dn'];
-        $this->password   	    = $config['connection']['password'];
-        $this->passwordType     = $config['connection']['password_type'];
-        $this->useTLS     	    = $config['connection']['use_tls'];
-        $this->isActiveDirectory= !empty($config['connection']['active_directory']);
+        $this->logger = $logger;
+        $this->reader = $reader;
+        $this->client = $client;
+        $this->twig   = new TwigString();
     }
 
-    /**
-     * Connect to LDAP service
-     * @return LDAP resource
-     * @throws Exception
-     */
-    private function connect()
-    {
-        // Don't permit multiple connect() calls to run
-        if ($this->ldapResource) {
-            return $this->ldapResource;
-        }
-
-        $this->ldapResource = ldap_connect($this->uri);
-        ldap_set_option($this->ldapResource, LDAP_OPT_PROTOCOL_VERSION, 3);
-
-        // Switch to TLS, if configured
-        if ($this->useTLS) {
-            $tlsStatus = ldap_start_tls($this->ldapResource);
-            if (!$tlsStatus) {
-                throw new Exception('Unable to enable TLS for LDAP connection.');
-            }
-            $this->logger->info('TLS enabled for LDAP connection.');
-        }
-
-        $r = @ldap_bind($this->ldapResource, $this->bindDN, $this->password);
-        if($r === false) {
-            throw new Exception('Cannot connect to LDAP server: ' . $this->uri . ' as ' . $this->bindDN . '/"' . $this->password . '".');
-        }
-        $this->logger->debug('Connected to LDAP server: ' . $this->uri . ' as ' . $this->bindDN . ' .');
-
-        return $r;
-    }
 
     /**
      * Find if an entity exists in LDAP without doing an LDAP search that generates
-     * warnings regarding an non-existant DN if turns out that the entity does not exist.
-     * @param $entity ... The entity to check for existance. Entity must have all MAY attributes.
+     * warnings regarding an non-existent DN if turns out that the entity does not exist.
+     * @param $entity ... The entity to check for existence. Entity must have all MAY attributes.
      * @param bool $checkOnly
      * @return bool Returns true if the given entity exists in LDAP
      * @throws MissingMustAttributeException
@@ -435,11 +396,11 @@ class LdapEntityManager
         $this->logger->info('Delete (recursive=' . $recursive . ') in LDAP: ' . $dn );
 
         if($recursive == false) {
-            return(ldap_delete($this->ldapResource, $dn));
+            return(ldap_delete($this->client->getLdapResource(), $dn));
         } else {
             //searching for sub entries
-            $sr=ldap_list($this->ldapResource, $dn, "ObjectClass=*", array(""));
-            $info = ldap_get_entries($this->ldapResource, $sr);
+            $sr=ldap_list($this->client->getLdapResource(), $dn, "ObjectClass=*", array(""));
+            $info = ldap_get_entries($this->client->getLdapResource(), $sr);
 
             for($i = 0; $i < $info['count']; $i++) {
                 //deleting recursively sub entries
@@ -449,7 +410,7 @@ class LdapEntityManager
                     return($result);
                 }
             }
-            return(ldap_delete($this->ldapResource, $dn));
+            return(ldap_delete($this->client->getLdapResource(), $dn));
         }
     }
 
@@ -516,7 +477,7 @@ class LdapEntityManager
         list($toInsert,) = $this->splitArrayForUpdate($arrayInstance);
 
         $this->logger->info("Insert $dn in LDAP : " . json_encode($toInsert));
-        ldap_add($this->ldapResource, $dn, $toInsert);
+        ldap_add($this->client->getLdapResource(), $dn, $toInsert);
     }
 
     /**
@@ -581,7 +542,7 @@ class LdapEntityManager
         if (!empty($toModify)) {
             unset($toModify['dn']);
             $this->logger->info("Modify $dn in LDAP : " . json_encode($toModify));
-            ldap_modify($this->ldapResource, $dn, $toModify);
+            ldap_modify($this->client->getLdapResource(), $dn, $toModify);
         }
 
 
@@ -590,7 +551,7 @@ class LdapEntityManager
         if (!empty($toDelete)) {
             $this->logger->info("Suppress from $dn these attributs in LDAP : " . json_encode($toDelete));
             try {
-                ldap_mod_del($this->ldapResource, $dn, $toDelete);
+                ldap_mod_del($this->client->getLdapResource(), $dn, $toDelete);
             }
             catch(Exception $e) {
             }
@@ -636,7 +597,7 @@ class LdapEntityManager
             }
 
             $this->connect();
-            ldap_control_paged_result($this->ldapResource, $options['pageSize'], $options['pageCritical'], $this->pageCookie);
+            ldap_control_paged_result($this->client->getLdapResource(), $options['pageSize'], $options['pageCritical'], $this->pageCookie);
         }
 
         // Discern subentryNodes for substituing into searchDN
@@ -650,8 +611,7 @@ class LdapEntityManager
         }
 
         if (empty($searchDn)) {
-            // throw new MissingSearchDn('Could not discern search DN while searching for '.$entityName);
-            $searchDn = '';
+             throw new MissingSearchDnException('Could not discern search DN while searching for '.$entityName);
         }
         
         // Discern LDAP filter
@@ -693,7 +653,7 @@ class LdapEntityManager
         // Search LDAP
         $searchResult = $this->doRawLdapSearch($filter, $attributes, $max, $searchDn);
 
-        $entries = @ldap_get_entries($this->ldapResource, $searchResult);
+        $entries = @ldap_get_entries($this->client->getLdapResource(), $searchResult);
         if (!empty($options['checkOnly']) && $options['checkOnly'] == true) {
             return ($entries['count'] > 0);
         }
@@ -705,7 +665,7 @@ class LdapEntityManager
         }
 
         if ($paging) {
-            ldap_control_paged_result_response($this->ldapResource, $searchResult, $this->pageCookie);
+            ldap_control_paged_result_response($this->client->getLdapResource(), $searchResult, $this->pageCookie);
             $this->pageMore = !empty($this->pageCookie);
         }
 
@@ -751,13 +711,13 @@ class LdapEntityManager
         $data = array();
         $this->logger->info('Search in LDAP: ' . $dn . ' query (ObjectClass=*)');
         try {
-            $sr = ldap_search($this->ldapResource,
+            $sr = ldap_search($this->client->getLdapResource(),
                 $dn,
                 '(ObjectClass=' . $objectClass . ')',
                 array_values($instanceMetadataCollection->getMetadatas()),
                 0
             );
-            $infos = ldap_get_entries($this->ldapResource, $sr);
+            $infos = ldap_get_entries($this->client->getLdapResource(), $sr);
             foreach ($infos as $entry) {
                 if(is_array($entry)) {
                     $data[] = $this->entryToEntity($entityName, $entry);
@@ -772,36 +732,34 @@ class LdapEntityManager
 
     public function doRawLdapGetDn($rawResult)
     {
-        return ldap_get_dn($this->ldapResource, $rawResult);
+        return ldap_get_dn($this->client->getLdapResource(), $rawResult);
     }
 
     public function doRawLdapGetAttributes($rawResult)
     {
-        return ldap_get_attributes($this->ldapResource, $rawResult);
+        return ldap_get_attributes($this->client->getLdapResource(), $rawResult);
     }
 
     public function doRawLdapCountEntries($rawResult)
     {
-        return ldap_count_entries($this->ldapResource, $rawResult);
+        return ldap_count_entries($this->client->getLdapResource(), $rawResult);
     }
 
     public function doRawLdapFirstEntry($rawResult)
     {
-        return ldap_first_entry($this->ldapResource, $rawResult);
+        return ldap_first_entry($this->client->getLdapResource(), $rawResult);
     }
 
     public function doRawLdapNextEntry($rawResult)
     {
-        return ldap_next_entry($this->ldapResource, $rawResult);
+        return ldap_next_entry($this->client->getLdapResource(), $rawResult);
     }
 
     public function doRawLdapSearch($rawFilter, $attributes, $count, $searchDN)
     {
-        // Connect if needed
-        $this->connect();
         $this->logger->info(sprintf("request on ldap root:%s with filter:%s", $searchDN, $rawFilter));
 
-        return @ldap_search($this->ldapResource,
+        return @ldap_search($this->client->getLdapResource(),
             $searchDN,
             $rawFilter,
             $attributes,
@@ -868,7 +826,7 @@ class LdapEntityManager
                 }
                 try {
                     if(preg_match('/^\d{14}/', $entryData[$attrValue][0])) {
-                        if ($this->isActiveDirectory) {
+                        if ($this->client->getIsActiveDirectory()) {
                             $datetime = Converter::fromAdDateTime($entryData[$attrValue][0], false);
                         } else {
                             $datetime = Converter::fromLdapDateTime($entryData[$attrValue][0], false);
@@ -907,31 +865,18 @@ class LdapEntityManager
 
     private function generateSequenceValue($dn)
     {
-        // Connect if needed
-        $this->connect();
-
-        $sr = ldap_search($this->ldapResource,
+        $sr = ldap_search($this->client->getLdapResource(),
             $dn,
             '(objectClass=integerSequence)'
         );
-        $infos = ldap_get_entries($this->ldapResource, $sr);
+        $infos = ldap_get_entries($this->client->getLdapResource(), $sr);
         $sequence = $infos[0];
         $return = $sequence['nextvalue'][0];
         $newValue = $sequence['nextvalue'][0] + $sequence['increment'][0];
         $entry = array(
             'nextvalue' => array($newValue),
         );
-        ldap_modify($this->ldapResource, $dn, $entry);
+        ldap_modify($this->client->getLdapResource(), $dn, $entry);
         return $return;
     }
-
-    private function isSha1($str) {
-        return (bool) preg_match('/^[0-9a-f]{40}$/i', $str);
-    }
 }
-
-class MissingMustAttributeException extends \Exception {}
-
-class MissingEntityManagerException extends \Exception {}
-
-class MissingSearchDn extends \Exception {}

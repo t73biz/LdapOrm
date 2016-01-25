@@ -29,6 +29,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('bind_dn')->cannotBeEmpty()->end()
                         ->scalarNode('password')->cannotBeEmpty()->end()
                         ->scalarNode('password_type')->defaultValue('plaintext')->end()
+                        ->booleanNode('is_active_directory')->defaultFalse()->end()
                     ->end()
                 ->end()
             ->end()

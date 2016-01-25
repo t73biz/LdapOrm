@@ -16,8 +16,14 @@ parameters:
             password: %carnegie_learning_ldap_orm.connection.password%
             password_type: %carnegie_learning_ldap_orm.connection.password_type%
             use_tls: %carnegie_learning_ldap_orm.connection.use_tls%
+            is_active_directory: %carnegie_learning_ldap_orm.connection.is_active_directory%
 
 services:
+    carnegie_learning_ldap_orm.client:
+            class: CarnegieLearning\LdapOrmBundle\Ldap\Client
+            arguments: ['@logger', %carnegie_learning_ldap_orm%]
+
     carnegie_learning_ldap_orm.entity_manager:
-        class: CarnegieLearning\LdapOrmBundle\Ldap\LdapEntityManager
-        arguments: [ @logger, @annotation_reader, %carnegie_learning_ldap_orm% ]
+            class: CarnegieLearning\LdapOrmBundle\Ldap\LdapEntityManager
+            arguments: [ '@logger', '@annotation_reader', '@carnegie_learning_ldap_orm.client'  ]
+
