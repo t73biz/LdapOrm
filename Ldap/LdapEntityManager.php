@@ -23,6 +23,7 @@ namespace Ucsf\LdapOrmBundle\Ldap;
 
 use DateTime;
 use Doctrine\Common\Annotations\Reader;
+use Doctrine\ORM\EntityRepository;
 use Exception;
 use Ucsf\LdapOrmBundle\Annotation\Ldap\ArrayField;
 use Ucsf\LdapOrmBundle\Annotation\Ldap\Attribute;
@@ -73,33 +74,33 @@ class LdapEntityManager
     /**
      * Build the Entity Manager service
      *
-     * @param Twig_Environment $twig
-     * @param Reader           $reader
-     * @param array            $config
+     * @param Logger    $logger
+     * @param Reader    $reader
+     * @param array     $config
      */
     public function __construct(Logger $logger, Reader $reader, $config)
     {
-        $this->logger     	= $logger;
-        $this->twig       	= new TwigString();
-        $this->uri        	= $config['connection']['uri'];
-        $this->bindDN     	= $config['connection']['bind_dn'];
-        $this->password   	= $config['connection']['password'];
-        $this->passwordType = $config['connection']['password_type'];
-        $this->useTLS     	= $config['connection']['use_tls'];
-        $this->isActiveDirectory = !empty($config['connection']['active_directory']);
-        $this->reader     	= $reader;
+        $this->logger     	    = $logger;
+        $this->reader     	    = $reader;
+        $this->twig       	    = new TwigString();
+        $this->uri        	    = $config['connection']['uri'];
+        $this->bindDN     	    = $config['connection']['bind_dn'];
+        $this->password   	    = $config['connection']['password'];
+        $this->passwordType     = $config['connection']['password_type'];
+        $this->useTLS     	    = $config['connection']['use_tls'];
+        $this->isActiveDirectory= !empty($config['connection']['active_directory']);
     }
 
     /**
      * Connect to LDAP service
-     * 
      * @return LDAP resource
+     * @throws Exception
      */
     private function connect()
     {
         // Don't permit multiple connect() calls to run
         if ($this->ldapResource) {
-            return;
+            return $this->ldapResource;
         }
 
         $this->ldapResource = ldap_connect($this->uri);
@@ -114,20 +115,22 @@ class LdapEntityManager
             $this->logger->info('TLS enabled for LDAP connection.');
         }
 
-        $r = ldap_bind($this->ldapResource, $this->bindDN, $this->password);
-        if($r == null) {
-            throw new Exception('Cannot connect to LDAP server: ' . $this-uri . ' as ' . $this->bindDN . '/"' . $this->password . '".');
+        $r = @ldap_bind($this->ldapResource, $this->bindDN, $this->password);
+        if($r === false) {
+            throw new Exception('Cannot connect to LDAP server: ' . $this->uri . ' as ' . $this->bindDN . '/"' . $this->password . '".');
         }
         $this->logger->debug('Connected to LDAP server: ' . $this->uri . ' as ' . $this->bindDN . ' .');
+
         return $r;
     }
 
     /**
      * Find if an entity exists in LDAP without doing an LDAP search that generates
      * warnings regarding an non-existant DN if turns out that the entity does not exist.
-     * @param $entity The entity to check for existance. Entity must have all MAY attributes.
+     * @param $entity ... The entity to check for existance. Entity must have all MAY attributes.
+     * @param bool $checkOnly
      * @return bool Returns true if the given entity exists in LDAP
-     * @throws MissingEntityManagerException
+     * @throws MissingMustAttributeException
      */
     public function entityExists($entity, $checkOnly = true) {
         $this->checkMust($entity);
@@ -140,7 +143,7 @@ class LdapEntityManager
         foreach ($entityMethods as $methodName) {
             // We just need getters
             if (strpos($methodName, 'get') === 0) {
-                // We just need basic, parameterless getters, also the twig->render() isn't
+                // We just need basic, parameter-less getters, also the twig->render() isn't
                 // supplying a parameter to the getter, so render() will break if we let a
                 // getter that takes a parameter slip through.
                 if ((new \ReflectionMethod($entityClass,$methodName))->getNumberOfParameters() < 1) {
@@ -216,7 +219,7 @@ class LdapEntityManager
             
             foreach ($annotations as $annotation) {
                 if ($annotation instanceof Attribute) {
-                    $varname=$publicAttr->getName();
+                    $varname = $publicAttr->getName();
                     $attribute=$annotation->getName();
                     $instanceMetadataCollection->addMeta($varname, $attribute);
                 }
@@ -254,7 +257,7 @@ class LdapEntityManager
     /**
      * Convert an entity to array using annotation reader
      * 
-     * @param unknown_type $instance
+     * @param $instance
      * 
      * @return array
      */
@@ -351,17 +354,16 @@ class LdapEntityManager
     /**
      * Build a DN for an entity with the use of dn annotation
      * 
-     * @param unknown_type $instance
+     * @param $instance
      * 
      * @return string
      */
     public function buildEntityDn($instance)
     {
         $instanceClassName = get_class($instance);
-        $arrayInstance=array();
 
         $r = new ReflectionClass($instanceClassName);
-        $instanceMetadataCollection = new ClassMetaDataCollection();
+
         $classAnnotations = $this->reader->getClassAnnotations($r);
 
         $dnModel = '';
@@ -380,6 +382,8 @@ class LdapEntityManager
     /**
      * Persist an instance in Ldap
      * @param unknown_type $entity
+     * @param bool $checkMust
+     * @throws MissingMustAttributeException
      */
     public function persist($entity, $checkMust = true)
     {
@@ -419,6 +423,9 @@ class LdapEntityManager
     /**
      * Delete an entry in ldap by Dn
      * @param string $dn
+     * @param bool $recursive
+     * @return bool
+     * @throws Exception
      */
     public function deleteByDn($dn, $recursive=false)
     {
@@ -470,15 +477,15 @@ class LdapEntityManager
         }
         return new Repository($this, $metadata);
     }
-    
 
-    
+
     /**
      * Check the MUST attributes for the given object according to its LDAP
      * objectClass. If all MUST attributes are satisfied checkMust() will return
      * a boolean true, otherwise it returns the offending attribute name.
-     * @param type $instance
+     * @param $instance
      * @return TRUE or the name of the offending attribute
+     * @throws MissingMustAttributeException
      */
     public function checkMust($instance) {
         $emptyAttribute = null;
@@ -606,9 +613,9 @@ class LdapEntityManager
      * pageCritical (boolean): if pagination employed, force paging and return no results on service which do not provide it. Default is true.
      * checkOnly (boolean): Only check result existence; don't convert search results to Symfony entities. Default is false.
      *
-     * @param type $entityName
-     * @param type $options
-     * @return type
+     * @param string $entityName
+     * @param array $options
+     * @return array
      */
     public function retrieve($entityName, $options = array())
     {
@@ -686,7 +693,7 @@ class LdapEntityManager
         // Search LDAP
         $searchResult = $this->doRawLdapSearch($filter, $attributes, $max, $searchDn);
 
-        $entries = ldap_get_entries($this->ldapResource, $searchResult);
+        $entries = @ldap_get_entries($this->ldapResource, $searchResult);
         if (!empty($options['checkOnly']) && $options['checkOnly'] == true) {
             return ($entries['count'] > 0);
         }
@@ -793,7 +800,8 @@ class LdapEntityManager
         // Connect if needed
         $this->connect();
         $this->logger->info(sprintf("request on ldap root:%s with filter:%s", $searchDN, $rawFilter));
-        return ldap_search($this->ldapResource,
+
+        return @ldap_search($this->ldapResource,
             $searchDN,
             $rawFilter,
             $attributes,
@@ -923,5 +931,7 @@ class LdapEntityManager
 }
 
 class MissingMustAttributeException extends \Exception {}
+
+class MissingEntityManagerException extends \Exception {}
 
 class MissingSearchDn extends \Exception {}

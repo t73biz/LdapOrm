@@ -8,8 +8,16 @@
 #            bind_dn: cn=Some Name
 #            password: aSecretWord
 #            password_type: plaintext
+parameters:
+    ucsf_ldap_orm:
+        connection:
+            uri: %ucsf_ldap_orm.connection.uri%
+            bind_dn: %ucsf_ldap_orm.connection.bind_dn%
+            password: %ucsf_ldap_orm.connection.password%
+            password_type: %ucsf_ldap_orm.connection.password_type%
+            use_tls: %ucsf_ldap_orm.connection.use_tls%
+
 services:
     ucsf_ldap_orm.entity_manager:
       class: Ucsf\LdapOrmBundle\Ldap\LdapEntityManager
-      arguments: [ @logger, @annotation_reader, %ucsfldaporm_test% ]
-
+      arguments: [ @logger, @annotation_reader, %ucsf_ldap_orm% ]
