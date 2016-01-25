@@ -20,11 +20,11 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                   *
  * ************************************************************************* */
 
-namespace Ucsf\LdapOrmBundle\Repository;
+namespace CarnegieLearning\LdapOrmBundle\Repository;
 
-use Ucsf\LdapOrmBundle\Ldap\LdapEntityManager;
-use Ucsf\LdapOrmBundle\Mapping\ClassMetaDataCollection;
-use Ucsf\LdapOrmBundle\Ldap\Filter\LdapFilter;
+use CarnegieLearning\LdapOrmBundle\Ldap\LdapEntityManager;
+use CarnegieLearning\LdapOrmBundle\Mapping\ClassMetaDataCollection;
+use CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter;
 
 /**
  * Repository for fetching ldap entity
@@ -37,9 +37,10 @@ class Repository {
 
     /**
      * Build the LDAP repository for the given entity type (i.e. class)
-     * 
+     *
      * @param LdapEntityManager $em
-     * @param ReflectionClass   $reflectorClass
+     * @param ClassMetaDataCollection $class
+     * @internal param ReflectionClass $reflectorClass
      */
     public function __construct(LdapEntityManager $em, ClassMetaDataCollection $class) {
         $this->em = $em;
@@ -55,7 +56,7 @@ class Repository {
      * @param array  $arguments
      *
      * @return array|object The found entity/entities.
-     * @throws BadMethodCallException  If the method called is an invalid find* method
+     * @throws \BadMethodCallException  If the method called is an invalid find* method
      *                                 or no find* method at all and therefore an invalid
      *                                 method call.
      */
@@ -128,11 +129,12 @@ class Repository {
     }
 
     /**
-     * Simple LDAP search with a single attribute name/value pair 
+     * Simple LDAP search with a single attribute name/value pair
      * within the current repository
      * @param string $varname LDAP attribute name
-     * @param string $value LDAP vattribute value
-     * @return An array of LdapEntity objects
+     * @param string $value LDAP attribute value
+     * @param null $attributes
+     * @return array An array of LdapEntity objects
      */
     public function findBy($varname, $value, $attributes = null) {
         $options = array();
@@ -168,25 +170,25 @@ class Repository {
      *
      * $mixed is always an associative array at the top level, with the key containing a LDAP
      * filter operator and the value containing another associative array that can:
-     * 
+     *
      * 1. Associate an LDAP field with a filtering value, for example:
-     * 
+     *
      * array($attributeName =>  $attributeValue.'*')
-     * 
-     * This applies a single attribute filter where the key is the attribute and the value 
+     *
+     * This applies a single attribute filter where the key is the attribute and the value
      * is a proper LDAP filter value, with asterisks (*), etc.  So it would produce a filter
      * like this:
-     * 
+     *
      * (someName=someValue*)
-     * 
+     *
      * 2. Associate an LDAP field with a sequential (i.e. not associative) array, for example:
-     * 
+     *
      * array($attributeName => array($attributeValue1, '*'.$attributeValue2.'*', '* '.$attributeValue3))
-     * 
+     *
      * This generate an '|' (or) filter on the attribute for the 3 given filter values, like this:
-     * 
+     *
      * (|(someName=someValue1)(someName=*someValue2*)(someName=* someValue3))
-     * 
+     *
      * 3. Associate another operator with another associative array. For example:
      *
      *   array(
@@ -228,9 +230,10 @@ class Repository {
      *      (key5=val5)
      *      (key6=val6)
      *
-     * @param array $mixed An associative array of LDAP filter operators and operands
+     * @param $filterArray
+     * @param null $attributes
      * @return string LDAP filter string
-     * @see \Ucsf\LdapOrmBundle\Ldap\Filter\LdapFilter::createComplexLdapFilter($mixed)
+     * @see \CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter::createComplexLdapFilter($mixed)
      */
     public function findByComplex($filterArray, $attributes = null) {
         return $this->em->retrieve(

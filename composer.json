@@ -1,13 +1,17 @@
 {
-    "name": "ucsf/ldaporm-bundle",
+    "name": "cli/ldaporm-bundle",
     "type": "symfony-bundle",
     "description": "Another LDAP ORM for Symfony2",
-    "keywords": ["ucsf", "orm", "ldap"],
+    "keywords": ["ucsf", "orm", "ldap", "carnegie learning"],
     "license": "GPL",
     "authors": [
         {
             "name": "UCSF IT Identity & Access Management",
             "email": "iam-team@ucsf.edu"
+        },
+        {
+            "name": "Ronald Chaplin",
+            "email": "rchaplin@t73.biz"
         }
     ],
     "require": {
@@ -21,10 +25,10 @@
         "symfony/twig-bundle": "2.*"
     },
     "autoload": {
-        "psr-0": { "Ucsf\\LdapOrmBundle": "" }
+        "psr-0": { "CarnegieLearning\\LdapOrmBundle": "" }
     },
     "minimum-stability": "dev",
-    "target-dir": "Ucsf/LdapOrmBundle",
+    "target-dir": "CarnegieLearning/LdapOrmBundle",
     "extra": {
     }
 }

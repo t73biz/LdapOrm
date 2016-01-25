@@ -1,6 +1,6 @@
 <?php
 
-namespace Ucsf\LdapOrmBundle\DependencyInjection;
+namespace CarnegieLearning\LdapOrmBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -18,7 +18,22 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('ucsf_ldap_orm');
+        $rootNode = $treeBuilder->root('carnegie_learning_ldap_orm');
+
+        $rootNode
+            ->children()
+                ->arrayNode('connection')
+                    ->children()
+                        ->scalarNode('uri')->cannotBeEmpty()->end()
+                        ->booleanNode('use_tls')->defaultFalse()->end()
+                        ->scalarNode('bind_dn')->cannotBeEmpty()->end()
+                        ->scalarNode('password')->cannotBeEmpty()->end()
+                        ->scalarNode('password_type')->defaultValue('plaintext')->end()
+                        ->booleanNode('is_active_directory')->defaultFalse()->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
 
         return $treeBuilder;
     }

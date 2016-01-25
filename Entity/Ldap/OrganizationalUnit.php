@@ -1,14 +1,14 @@
 <?php
-namespace Ucsf\LdapOrmBundle\Entity\Ldap;
+namespace CarnegieLearning\LdapOrmBundle\Entity\Ldap;
 
 
 use Doctrine\ORM\Mapping as ORM;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\Attribute;
-use Ucsf\LdapOrmBundle\Annotation\Ldap\ObjectClass;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Attribute;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ObjectClass;
 
 
 /**
- * Class to represent a person within EDS ou=people,dc=ucsf,dc=edu
+ * Class to represent a person within EDS ou=people,dc=CarnegieLearning,dc=edu
  *
  * @author jgabler
  * @ObjectClass("organizationalUnit")

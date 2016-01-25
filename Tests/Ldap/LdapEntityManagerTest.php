@@ -6,12 +6,12 @@
  * Time: 11:09 AM
  */
 
-namespace Ucsf\LdapOrmBundle\Tests\Ldap;
+namespace CarnegieLearning\LdapOrmBundle\Tests\Ldap;
 
 
-use Ucsf\LdapOrmBundle\Entity\Ldap\OrganizationalPerson;
-use Ucsf\LdapOrmBundle\Ldap\Converter;
-use Ucsf\LdapOrmBundle\Tests\DatabaseTestCase;
+use CarnegieLearning\LdapOrmBundle\Entity\Ldap\OrganizationalPerson;
+use CarnegieLearning\LdapOrmBundle\Ldap\Converter;
+use CarnegieLearning\LdapOrmBundle\Tests\DatabaseTestCase;
 
 class LdapEntityManagerTest extends DatabaseTestCase {
 
@@ -19,7 +19,6 @@ class LdapEntityManagerTest extends DatabaseTestCase {
         $adTimestamp = '130898490540000000.0Z';
         $decorator = Converter::fromAdDateTime($adTimestamp);
         $convertedAdTimestamp = Converter::toAdDateTime($decorator);
-
         $this->assertEquals($adTimestamp, $convertedAdTimestamp);
     }
 }

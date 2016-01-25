@@ -19,9 +19,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                   *
  ***************************************************************************/
  
-namespace Ucsf\LdapOrmBundle\Ldap\Filter;
+namespace CarnegieLearning\LdapOrmBundle\Ldap\Filter;
 
-use Ucsf\LdapOrmBundle\Exception\Filter\InvalidLdapFilterException;
+use CarnegieLearning\LdapOrmBundle\Exception\Filter\InvalidLdapFilterException;
 
 class LdapFilter
 {
@@ -139,16 +139,16 @@ class LdapFilter
             throw new InvalidLdapFilterException('The filter must be an array');
         }        
         if (is_array($filterData)) {
-            $subfilter = '';
+            $subFilter = '';
             foreach ($filterData as $key => $val) {
-                if (is_numeric($key)) { // occures when applying same operator (e.g. array key) on a list of key/value pairs
+                if (is_numeric($key)) { // occurs when applying same operator (e.g. array key) on a list of key/value pairs
                     $key = key($val);
                     $val = array_pop($val);
                 }
                 if (is_array($val)) { // complex filter
                     if (!(bool) count(array_filter(array_keys($val), 'is_string'))) { // if not assoc array, i.e.  OR multiple values 
-                        $multivalue = '';
-                        foreach ($val as $subval) {
+                        $multiValue = '';
+                        foreach ($val as $subValue) {
                             $op = '=';
                             if (preg_match('/([><])$/', $key, $matches)) {
                                 $key = substr($key, 0, -1);
@@ -158,16 +158,16 @@ class LdapFilter
                                 $key = substr($key, 0, -2);
                                 $op = $matches[1];
                             }
-                            if (is_array($subval)) {
-                                $subval = self::_format($subval);
+                            if (is_array($subValue)) {
+                                $subValue = self::_format($subValue);
                             } else {
-                                $subval = self::escapeLdapValue($subval);
+                                $subValue = self::escapeLdapValue($subValue);
                             }
-                            $multivalue .= '(' . $key . $op . $subval . ')';
+                            $multiValue .= '(' . $key . $op . $subValue . ')';
                         }
-                        $subfilter .= '(|' . $multivalue . ')';
+                        $subFilter .= '(|' . $multiValue . ')';
                     } else { // iterate into complex sub-filter
-                        $subfilter .= '(' . $key . self::_format($val) . ')';
+                        $subFilter .= '(' . $key . self::_format($val) . ')';
                     }
                 } else { // simple filter
                     $op = '=';
@@ -180,11 +180,11 @@ class LdapFilter
                         $op = $matches[1];
                     }
                     $val = self::escapeLdapValue($val);
-                    $subfilter .= '(' . $key . $op . $val . ')';
+                    $subFilter .= '(' . $key . $op . $val . ')';
                 }
             }
 
-            return $subfilter;
+            return $subFilter;
         } else {
             return $filterData;
         }

@@ -19,7 +19,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                   *
  ***************************************************************************/
 
-namespace Ucsf\LdapOrmBundle\Annotation\Ldap;
+namespace CarnegieLearning\LdapOrmBundle\Annotation\Ldap;
 
 /**
  * Annotation to describe an Ldap objectClass
