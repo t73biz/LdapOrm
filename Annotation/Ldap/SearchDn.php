@@ -2,7 +2,7 @@
 namespace CarnegieLearning\LdapOrmBundle\Annotation\Ldap;
 
 /**
- * Annotation to describe an Ldap dn
+ * Annotation to describe an Ldap Search dn
  * 
  * @Annotation
  * @author Jason Gabler <jason.gabler@ucsf.edu>

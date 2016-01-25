@@ -40,7 +40,6 @@ use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\SearchDn;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Operational;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Sequence;
 use CarnegieLearning\LdapOrmBundle\Components\GenericIterator;
-use CarnegieLearning\LdapOrmBundle\Components\TwigString;
 use CarnegieLearning\LdapOrmBundle\Entity\DateTimeDecorator;
 use CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter;
 use CarnegieLearning\LdapOrmBundle\Mapping\ClassMetaDataCollection;
@@ -57,13 +56,31 @@ use Symfony\Bridge\Monolog\Logger;
  */
 class LdapEntityManager
 {
+    /**
+     *
+     */
     const DEFAULT_MAX_RESULT_COUNT      = 100;
 
-    private $pageCookie 	= "";
-    private $pageMore    	= FALSE;
+    /**
+     * @var string
+     */
+    private $pageCookie;
+
+    /**
+     * @var
+     */
+    private $pageMore;
+
+    /**
+     * @var Reader
+     */
     private $reader;
-    
+
+    /**
+     * @var null
+     */
     private $iterator = Null;
+
     /**
      * @var Client
      */
@@ -81,7 +98,6 @@ class LdapEntityManager
         $this->logger = $logger;
         $this->reader = $reader;
         $this->client = $client;
-        $this->twig   = new TwigString();
     }
 
 
@@ -247,17 +263,7 @@ class LdapEntityManager
             if($value == null) {
                 if($instanceMetadataCollection->isSequence($instanceMetadataCollection->getKey($varname))) {
 
-                    $sequence = $this->renderString($instanceMetadataCollection->getSequence($instanceMetadataCollection->getKey($varname)), array(
-                        'entity' => $instance,
-                        /*
-                         * In the original source code for the bundle upon which CarnegieLearningLdapOrm is based, it was
-                         * assumed that you'd only be looking for records under a single base DN. Therefore,
-                         * configuration for the DN was put into configuration files. This bundle permits you to
-                         * search any number of base DNsw
-                         *
-                        'baseDN' => $this->baseDN,
-                         */
-                    ));
+                    $sequence = $instanceMetadataCollection->getSequence($instanceMetadataCollection->getKey($varname));
 
                     $value = (int) $this->generateSequenceValue($sequence);
                     $instance->$setter($value);
@@ -327,15 +333,13 @@ class LdapEntityManager
 
         $classAnnotations = $this->reader->getClassAnnotations($r);
 
-        $dnModel = '';
+        $entityDn = '';
         foreach ($classAnnotations as $classAnnotation) {
             if ($classAnnotation instanceof Dn) {
-                $dnModel = $classAnnotation->getValue();
+                $entityDn = $classAnnotation->getValue();
                 break;
             }
         }
-
-        $entityDn =  $this->renderString($dnModel, array('entity' => $instance));
 
         return $entityDn;
     }
@@ -596,7 +600,6 @@ class LdapEntityManager
                 $this->pageCookie = $options['pageCookie'];
             }
 
-            $this->connect();
             ldap_control_paged_result($this->client->getLdapResource(), $options['pageSize'], $options['pageCritical'], $this->pageCookie);
         }
 
@@ -607,7 +610,7 @@ class LdapEntityManager
         if (isset($options['searchDn'])) {
             $searchDn = $options['searchDn'];
         } else {
-            $searchDn = $this->renderString($instanceMetadataCollection->getSearchDn(), array('entity' => $subentryNodes));
+            $searchDn = $instanceMetadataCollection->getSearchDn();
         }
 
         if (empty($searchDn)) {
@@ -703,8 +706,6 @@ class LdapEntityManager
      */
     public function retrieveByDn($dn, $entityName, $max = self::DEFAULT_MAX_RESULT_COUNT, $objectClass = "*")
     {
-        // Connect if needed
-        $this->connect();
 
         $instanceMetadataCollection = $this->getClassMetadata($entityName);
 
