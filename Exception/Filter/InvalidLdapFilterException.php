@@ -21,4 +21,9 @@
 
 namespace CarnegieLearning\LdapOrmBundle\Exception\Filter;
 
+/**
+ * Class InvalidLdapFilterException
+ * @package CarnegieLearning\LdapOrmBundle\Exception\Filter
+ * @codeCoverageIgnore
+ */
 class InvalidLdapFilterException extends \Exception { } 

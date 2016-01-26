@@ -2,9 +2,12 @@
 
 namespace CarnegieLearning\LdapOrmBundle\Ldap;
 
-
 use Symfony\Bridge\Monolog\Logger;
 
+/**
+ * Class Client
+ * @package CarnegieLearning\LdapOrmBundle\Ldap
+ */
 class Client
 {
     /**
@@ -51,9 +54,14 @@ class Client
      * Client constructor.
      * @param Logger $logger
      * @param array $config
+     * @throws \Exception
      */
-    public function __construct(Logger $logger, array  $config)
+    public function __construct(Logger $logger, array $config)
     {
+        if(empty($config)) {
+            throw new \Exception('The configuration for the LDAP Client can not be empty.');
+        }
+
         $this->logger           = $logger;
         $this->bindDN     	    = $config['connection']['bind_dn'];
         $this->isActiveDirectory= $config['connection']['is_active_directory'];
@@ -61,15 +69,16 @@ class Client
         $this->passwordType     = $config['connection']['password_type'];
         $this->uri        	    = $config['connection']['uri'];
         $this->useTLS     	    = $config['connection']['use_tls'];
-
+        $this->ldapResource     = false;
         $this->connect();
     }
 
     /**
      * Connect to LDAP service
+     * @codeCoverageIgnore
      * @throws /Exception
      */
-    private function connect()
+    public function connect()
     {
         // Don't permit multiple connect() calls to run
         if ($this->ldapResource) {
@@ -77,25 +86,35 @@ class Client
         }
 
         $this->ldapResource = ldap_connect($this->uri);
+
+        if($this->ldapResource === false) {
+            throw new \Exception('Unable to enable establish LDAP connection.');
+        }
+
         ldap_set_option($this->ldapResource, LDAP_OPT_PROTOCOL_VERSION, 3);
 
         // Switch to TLS, if configured
         if ($this->useTLS) {
-            $tlsStatus = ldap_start_tls($this->ldapResource);
-            if (!$tlsStatus) {
+            try {
+                ldap_start_tls($this->ldapResource);
+            } catch(\Exception $e) {
                 throw new \Exception('Unable to enable TLS for LDAP connection.');
             }
+
             $this->logger->info('TLS enabled for LDAP connection.');
         }
 
-        $r = ldap_bind($this->ldapResource, $this->bindDN, $this->password);
-        if($r === false) {
+        try {
+            ldap_bind($this->ldapResource, $this->bindDN, $this->password);
+        } catch(\Exception $e) {
             throw new \Exception('Cannot connect to LDAP server: ' . $this->uri . ' as ' . $this->bindDN . '/"' . $this->password . '".');
         }
+
         $this->logger->debug('Connected to LDAP server: ' . $this->uri . ' as ' . $this->bindDN . ' .');
     }
 
     /**
+     * @codeCoverageIgnore
      * @return Resource
      */
     public function getLdapResource()
@@ -104,6 +123,7 @@ class Client
     }
 
     /**
+     * @codeCoverageIgnore
      * @return bool
      */
     public function getIsActiveDirectory()

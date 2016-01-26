@@ -21,4 +21,9 @@
 
 namespace CarnegieLearning\LdapOrmBundle\Exception;
 
+/**
+ * Class MissingMustAttributeException
+ * @package CarnegieLearning\LdapOrmBundle\Exception
+ * @codeCoverageIgnore
+ */
 class MissingMustAttributeException extends \Exception { }
