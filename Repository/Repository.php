@@ -31,8 +31,24 @@ use CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter;
  */
 class Repository {
 
-    protected $em, $it;
+    /**
+     * @var LdapEntityManager
+     */
+    protected $em;
+
+    /**
+     * @var
+     */
+    protected $it;
+
+    /**
+     * @var ClassMetaDataCollection
+     */
     private $class;
+
+    /**
+     * @var string
+     */
     private $entityName;
 
     /**
@@ -167,18 +183,27 @@ class Repository {
 
     /**
      * @param $filterArray
-     * @param null $attributes
+     * @param array $attributes
      * @return string LDAP filter string
      * @see \CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter::createComplexLdapFilter($mixed)
      */
-    public function findByComplex($filterArray, $attributes = null) {
-        return $this->em->retrieve(
-            $this->entityName,
-            array(
-                'filter' => new LdapFilter($filterArray),
-                'attributes' => $attributes
-            )
-        );
+    public function findByComplex($filterArray, $attributes = array()) {
+        $options = [];
+        $options['filter'] = new LdapFilter($filterArray);
+
+        foreach ($attributes as $key => $value) {
+            $options[$key] = $value;
+        }
+
+        return $this->em->retrieve($this->entityName, $options);
+    }
+
+    /**
+     * @return string
+     */
+    public function getSearchDn()
+    {
+        return$this->class->getSearchDn();
     }
 
    /**

@@ -565,7 +565,7 @@ class LdapEntityManager
     /**
      * The core of ORM behavior for this bundle: retrieve data
      * from LDAP and convert results into objects.
-     * 
+     *
      * Options maybe:
      *
      * attributes (array): array of attribute types (strings)
@@ -581,11 +581,11 @@ class LdapEntityManager
      * @param string $entityName
      * @param array $options
      * @return array
+     * @throws MissingSearchDnException
      */
     public function retrieve($entityName, $options = array())
     {
         $paging = !empty($options['pageSize']);
-
         $instanceMetadataCollection = $this->getClassMetadata($entityName);
 
         // Discern max result size
@@ -606,6 +606,7 @@ class LdapEntityManager
         // Discern subentryNodes for substituing into searchDN
         $subentryNodes = empty($options['subentryNodes']) ? array() : $options['subentryNodes'];
 
+
         // Discern search DN
         if (isset($options['searchDn'])) {
             $searchDn = $options['searchDn'];
@@ -614,7 +615,7 @@ class LdapEntityManager
         }
 
         if (empty($searchDn)) {
-             throw new MissingSearchDnException('Could not discern search DN while searching for '.$entityName);
+             throw new MissingSearchDnException('Could not discern search DN while searching for ' . $entityName);
         }
         
         // Discern LDAP filter
@@ -758,9 +759,9 @@ class LdapEntityManager
 
     public function doRawLdapSearch($rawFilter, $attributes, $count, $searchDN)
     {
-        $this->logger->info(sprintf("request on ldap root:%s with filter:%s", $searchDN, $rawFilter));
+        $this->logger->info(sprintf("Request on ldap root:%s with filter:%s", $searchDN, $rawFilter));
 
-        return @ldap_search($this->client->getLdapResource(),
+        return ldap_search($this->client->getLdapResource(),
             $searchDN,
             $rawFilter,
             $attributes,

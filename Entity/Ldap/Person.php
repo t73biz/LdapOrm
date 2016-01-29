@@ -159,16 +159,11 @@ class Person extends LdapEntity
 
     /**
      * @codeCoverageIgnore
-     * @param null $userPassword
+     * @param string $userPassword
      * @return $this
      */
-    function setUserPassword($userPassword = null) {
-        if (empty($userPassword)) {
-            unset($this->userPassword);
-        } else {
-            $this->userPassword = $userPassword;
-        }
-
+    function setUserPassword($userPassword) {
+        $this->userPassword = $userPassword;
         return $this;
     }
 }

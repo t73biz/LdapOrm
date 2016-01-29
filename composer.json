@@ -4,6 +4,7 @@
     "description": "Another LDAP ORM for Symfony2",
     "keywords": ["ucsf", "orm", "ldap", "carnegie learning"],
     "license": "GPL",
+    "version": "0.1.0",
     "authors": [
         {
             "name": "UCSF IT Identity & Access Management",
