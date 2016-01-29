@@ -8,5 +8,9 @@
 
 namespace CarnegieLearning\LdapOrmBundle\Exception;
 
-
+/**
+ * Class MissingEntityManagerException
+ * @package CarnegieLearning\LdapOrmBundle\Exception
+ * @codeCoverageIgnore
+ */
 class MissingEntityManagerException extends \Exception {}

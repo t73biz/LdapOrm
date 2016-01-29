@@ -25,56 +25,70 @@ use CarnegieLearning\LdapOrmBundle\Exception\Filter\InvalidLdapFilterException;
 
 class LdapFilter
 {
-    
+    /**
+     * @var array|null
+     */
 	private $filterArray;
 
+    /**
+     * @var string
+     */
+    private $operation;
+
+    /**
+     * LdapFilter constructor.
+     * @param null $filterArray
+     * @throws InvalidLdapFilterException
+     */
 	function __construct($filterArray=null)
 	{
-            if (empty($filterArray)) {
-                $this->filterArray = array('objectClass' => '*');
-            } else {
-                if (!is_array($filterArray)) {
-                    throw new InvalidLdapFilterException('Filter data must be provided in an associative array.');
-                }
-                $this->filterArray = $filterArray;
+        if (empty($filterArray)) {
+            $this->filterArray = array('objectClass' => '*');
+        } else {
+            if (!is_array($filterArray)) {
+                throw new InvalidLdapFilterException('Filter data must be provided in an associative array.');
             }
+            $this->filterArray = $filterArray;
+        }
+
+        $this->operation = '=';
 	}
-        
+
         /**
          * Create a complex LDAP filter string from an multi-dimensional associative array of LDAP filter
          * operators, attributes and values. By default comparisons are based upon equality ('='), however
          * adding a '<' or '>' will change the comparator to '<=' or '>=', respectively.  Here are some examples
          * of the basic building blocks:
-         * 
+         *
          * 1. Filter with an attribute of a given value with a simple associative array, for example:
-         * 
+         *
          * $attributeName = 'color';
          * $attributeValue= 'green';
          * array($attributeName =>  $attributeValue.'*')
-         * 
-         * This applies a single attribute filter where the key is the attribute and the value 
+         *
+         * This applies a single attribute filter where the key is the attribute and the value
          * is string filter value, in this case using asterisk (*) as a wildcard.  This generates a filter
          * like this:
-         * 
+         *
          * (color=green*)
-         * 
+         *
          * 2. Filter on an attribute with a set of possible values with an associative array that has the attribute
          * as the key and an indexed array as the value. This following example will generate an '|' (or) filter on
          * the attribute for the 3 given filter values.
-         * 
+         *
          * $attributeName = 'color';
          * $attributeValue1= 'green';
          * $attributeValue2= 'red';
          * $attributeValue3= 'blue';
          * array($attributeName => array($attributeValue1, '*'.$attributeValue2.'*', '* '.$attributeValue3))
-         * 
+         *
          * will become:
-         * 
+         *
          * (|(color=green)(color=*red*)(color=* blue))
-         * 
+         *
          * 3. Finally, to create truly complex queries, associate an operator with another associative array. Note in
-         * the example below the output has 3 '&' clauses at the same level. Were these set at the same level in the 
-         * associate array, the last one would overwrite the first two. To avoid this, the multiple '&' clauses are 
+         * the example below the output has 3 '&' clauses at the same level. Were these set at the same level in the
+         * associate array, the last one would overwrite the first two. To avoid this, the multiple '&' clauses are
          * each put with a single-index array.
          *
          *   array(
@@ -126,75 +140,102 @@ class LdapFilter
         return self::_format($this->filterArray);
     }
 
+    /**
+     * As these are reserved characters within the LDAP filter domain,
+     * we need to escape these specific characters when needing to use
+     * them within a filter.
+     *
+     * @param $value
+     * @return mixed
+     */
+    public function escapeLdapValue($value) {
+        return str_replace(
+            array('=', ',', '(', ')'),
+            array('\\3d', '\\2c', '\\28', '\\29'),
+            $value);
+    }
+
+    /**
+     * @codeCoverageIgnore
+     * @param $filterData
+     * @return string
+     * @throws InvalidLdapFilterException
+     */
+    public function _format($filterData)
+    {
+        if (!is_array($filterData)) {
+            throw new InvalidLdapFilterException('The filter must be an array');
+        }
+
+        $subFilter = '';
+        foreach ($filterData as $key => $val) {
+            if (is_numeric($key)) { // occurs when applying same operator (e.g. array key) on a list of key/value pairs
+                $key = key($val);
+                $val = array_pop($val);
+            }
+            if (is_array($val)) { // complex filter
+                if (!(bool) count(array_filter(array_keys($val), 'is_string'))) { // if not assoc array, i.e.  OR multiple values
+                    $multiValue = '';
+                    foreach ($val as $subValue) {
+                        $this->operation = '=';
+                        $key = $this->_matchKey($key);
+                        if (is_array($subValue)) {
+                            $subValue = self::_format($subValue);
+                        } else {
+                            $subValue = $this->escapeLdapValue($subValue);
+                        }
+                        $multiValue .= '(' . $key . $this->operation . $subValue . ')';
+                    }
+                    $subFilter .= '(|' . $multiValue . ')';
+                } else { // iterate into complex sub-filter
+                    $subFilter .= '(' . $key . self::_format($val) . ')';
+                }
+            } else { // simple filter
+                $this->operation = '=';
+                $key = $this->_matchKey($key);
+                $val = $this->escapeLdapValue($val);
+                $subFilter .= '(' . $key . $this->operation .$val . ')';
+            }
+        }
+
+        return $subFilter;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     * @return array|null
+     */
     function getFilterArray() {
         return $this->filterArray;
     }
 
+    /**
+     * @codeCoverageIgnore
+     * @param $filterArray
+     * @return LdapFilter
+     */
     function setFilterArray($filterArray) {
         $this->filterArray = $filterArray;
+
+        return $this;
     }
 
-    public static function _format($filterData) {
-        if (!is_array($filterData)) {
-            throw new InvalidLdapFilterException('The filter must be an array');
-        }        
-        if (is_array($filterData)) {
-            $subFilter = '';
-            foreach ($filterData as $key => $val) {
-                if (is_numeric($key)) { // occurs when applying same operator (e.g. array key) on a list of key/value pairs
-                    $key = key($val);
-                    $val = array_pop($val);
-                }
-                if (is_array($val)) { // complex filter
-                    if (!(bool) count(array_filter(array_keys($val), 'is_string'))) { // if not assoc array, i.e.  OR multiple values 
-                        $multiValue = '';
-                        foreach ($val as $subValue) {
-                            $op = '=';
-                            if (preg_match('/([><])$/', $key, $matches)) {
-                                $key = substr($key, 0, -1);
-                                $op = $matches[1];
-                            }
-                            if (preg_match('/([><]=)$/', $key, $matches)) {
-                                $key = substr($key, 0, -2);
-                                $op = $matches[1];
-                            }
-                            if (is_array($subValue)) {
-                                $subValue = self::_format($subValue);
-                            } else {
-                                $subValue = self::escapeLdapValue($subValue);
-                            }
-                            $multiValue .= '(' . $key . $op . $subValue . ')';
-                        }
-                        $subFilter .= '(|' . $multiValue . ')';
-                    } else { // iterate into complex sub-filter
-                        $subFilter .= '(' . $key . self::_format($val) . ')';
-                    }
-                } else { // simple filter
-                    $op = '=';
-                    if (preg_match('/([><])$/', $key, $matches)) {
-                        $key = substr($key, 0, -1);
-                        $op = $matches[1];
-                    }
-                    if (preg_match('/([><]=)$/', $key, $matches)) {
-                        $key = substr($key, 0, -2);
-                        $op = $matches[1];
-                    }
-                    $val = self::escapeLdapValue($val);
-                    $subFilter .= '(' . $key . $op . $val . ')';
-                }
-            }
-
-            return $subFilter;
-        } else {
-            return $filterData;
+    /**
+     * @codeCoverageIgnore
+     * @param $key
+     * @return string
+     */
+    private function _matchKey($key)
+    {
+        if (preg_match('/([><])$/', $key, $matches)) {
+            $key = substr($key, 0, -1);
+            $this->operation = $matches[1];
         }
-    }
-    
-    public static function escapeLdapValue($val) {
-        return str_replace(
-                array('=', ',', '(', ')'),
-                array('\\3d', '\\2c', '\\28', '\\29'),
-                $val);
-    }
+        if (preg_match('/([><]=)$/', $key, $matches)) {
+            $key = substr($key, 0, -2);
+            $this->operation = $matches[1];
+        }
 
+        return $key;
+    }
 }

@@ -31,8 +31,24 @@ use CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter;
  */
 class Repository {
 
-    protected $em, $it;
+    /**
+     * @var LdapEntityManager
+     */
+    protected $em;
+
+    /**
+     * @var
+     */
+    protected $it;
+
+    /**
+     * @var ClassMetaDataCollection
+     */
     private $class;
+
+    /**
+     * @var string
+     */
     private $entityName;
 
     /**
@@ -70,7 +86,7 @@ class Repository {
             case (0 === strpos($method, 'findOneBy')):
                 $by = lcfirst(substr($method, 9));
                 if ($this->class->getMeta($by) == null) {
-                    throw new \BadMethodCallException("No sutch ldap attribute $by in $this->entityName");
+                    throw new \BadMethodCallException("No such ldap attribute $by in $this->entityName");
                 }
                 $method = 'findOneBy';
                 break;
@@ -81,11 +97,12 @@ class Repository {
                     "either findBy or findOneBy!"
                 );
         }
+
         return $this->$method(
-                    $by, // attribute name
-                    $arguments[0], // attribute value
-                    empty($arguments[1]) ? null : $arguments[1] // attribute list
-                );
+            $by, // attribute name
+            $arguments[0], // attribute value
+            empty($arguments[1]) ? null : $arguments[1] // attribute list
+        );
     }
 
     /**
@@ -94,10 +111,10 @@ class Repository {
      * the filter will also contain a constraint for that attribute.
      *
      * Also saves previously used filters objects to prevent excessive memory footprint usage
-     * 
-     * @param type $varname
-     * @param type $value
-     * @return An LdapFilter
+     *
+     * @param bool $varname
+     * @param bool $value
+     * @return array An LdapFilter
      */
     private function getFilter($varname = false, $value = false) {
         static $allFilters = array();
@@ -165,84 +182,28 @@ class Repository {
 
 
     /**
-     * Create a complex LDAP filter string from an multi-dimensional array of LDAP filter
-     * operators and operands.
-     *
-     * $mixed is always an associative array at the top level, with the key containing a LDAP
-     * filter operator and the value containing another associative array that can:
-     *
-     * 1. Associate an LDAP field with a filtering value, for example:
-     *
-     * array($attributeName =>  $attributeValue.'*')
-     *
-     * This applies a single attribute filter where the key is the attribute and the value
-     * is a proper LDAP filter value, with asterisks (*), etc.  So it would produce a filter
-     * like this:
-     *
-     * (someName=someValue*)
-     *
-     * 2. Associate an LDAP field with a sequential (i.e. not associative) array, for example:
-     *
-     * array($attributeName => array($attributeValue1, '*'.$attributeValue2.'*', '* '.$attributeValue3))
-     *
-     * This generate an '|' (or) filter on the attribute for the 3 given filter values, like this:
-     *
-     * (|(someName=someValue1)(someName=*someValue2*)(someName=* someValue3))
-     *
-     * 3. Associate another operator with another associative array. For example:
-     *
-     *   array(
-     *       '&' => array(
-     *           'key3' => 'val3',
-     *           'key4' => 'val4',
-     *           '|' => array(
-     *               'key1' => 'val1',
-     *               'key2' => array('val2a', 'val2b'),
-     *               '&' => array(
-     *                   'key5' => 'val5',
-     *                   'key6' => 'val6',
-     *               ),
-     *               array( // this is how you get multiple & under on |
-     *                   '&' => array(
-     *                       'key7' => 'val7',
-     *                       'key8' => 'val8',
-     *                   )
-     *               ),
-     *               array(
-     *                   '&' => array(
-     *                       'key9' => 'val9',
-     *                       'key20' => 'val10',
-     *                   )
-     *               )
-     *           )
-     *       )
-     *   )
-     *
-     * would produce:
-     *
-     * (&
-     *  (key3=val3)
-     *  (key=val4)
-     * (|
-     *   (key1=val1)
-     *   (|(key2=val2a)(key2=val2b))
-     *   (&
-     *      (key5=val5)
-     *      (key6=val6)
-     *
      * @param $filterArray
-     * @param null $attributes
+     * @param array $attributes
      * @return string LDAP filter string
      * @see \CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter::createComplexLdapFilter($mixed)
      */
-    public function findByComplex($filterArray, $attributes = null) {
-        return $this->em->retrieve(
-            $this->entityName,
-            array(
-                'filter' => new LdapFilter($filterArray),
-                'attributes' => $attributes
-            )
-        );
+    public function findByComplex($filterArray, $attributes = array()) {
+        $options = [];
+        $options['filter'] = new LdapFilter($filterArray);
+
+        foreach ($attributes as $key => $value) {
+            $options[$key] = $value;
+        }
+
+        return $this->em->retrieve($this->entityName, $options);
+    }
+
+    /**
+     * @return string
+     */
+    public function getSearchDn()
+    {
+        return$this->class->getSearchDn();
     }
 
    /**

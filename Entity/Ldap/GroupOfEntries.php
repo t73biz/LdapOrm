@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ObjectClass;
 
 /**
+ * @codeCoverageIgnore
  * @author jgabler
  * @ObjectClass("GroupOfEntries")
  */

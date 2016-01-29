@@ -21,23 +21,81 @@
  
 namespace CarnegieLearning\LdapOrmBundle\Mapping;
 
-
+/**
+ * Class ClassMetaDataCollection
+ * @codeCoverageIgnore
+ * @package CarnegieLearning\LdapOrmBundle\Mapping
+ */
 class ClassMetaDataCollection
 {
+    /**
+     * @var array
+     */
     private $metadatas;
+
+    /**
+     * @var string
+     */
     private $repository;
+
+    /**
+     * @var string
+     */
     public $name;
+
+    /**
+     * @var array string
+     */
     public $arrayOfLink;
+
+    /**
+     * @var string
+     */
     public $sequences;
+
+    /**
+     * @var array string
+     */
     public $dnRegex;
+
+    /**
+     * @var array string
+     */
     public $parentLink;
+
+    /**
+     * @var string
+     */
     public $objectClass;
+
+    /**
+     * @var string
+     */
     public $searchDn;
+
+    /**
+     * @var string
+     */
     public $dn;
+
+    /**
+     * @var array
+     */
     public $arrayField;
+
+    /**
+     * @var array
+     */
     public $must;
+
+    /**
+     * @var array
+     */
     public $operational;
 
+    /**
+     * ClassMetaDataCollection constructor.
+     */
     public function __construct()
     {
         $this->metadatas        = array();
@@ -50,21 +108,34 @@ class ClassMetaDataCollection
         $this->operational      = array();
     }
 
+    /**
+     * @param $fieldName
+     */
     public function addArrayField($fieldName)
     {
         $this->arrayField[$fieldName] = true;
     }
-    
+
+    /**
+     * @param $fieldName
+     */
     public function addMust($fieldName)
     {
         $this->must[$fieldName] = true;
     }
 
+    /**
+     * @param $fieldName
+     */
     public function addOperational($fieldName)
     {
         $this->operational[$fieldName] = true;
     }
 
+    /**
+     * @param $fieldName
+     * @return bool
+     */
     public function isArrayField($fieldName)
     {
         if(isset($this->arrayField[$fieldName])) {
@@ -74,126 +145,234 @@ class ClassMetaDataCollection
         return false;
     }
 
+    /**
+     * @param $objectClass
+     * @return $this
+     */
     public function setObjectClass($objectClass) {
         $this->objectClass = $objectClass;
+
+        return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getObjectClass() {
         return $this->objectClass;
     }
+
+    /**
+     * @return string
+     */
     function getSearchDn() {
         return $this->searchDn;
     }
 
+    /**
+     * @param $searchDn
+     * @return $this
+     */
     function setSearchDn($searchDn) {
         $this->searchDn = $searchDn;
+
+        return $this;
     }
+
+    /**
+     * @return string
+     */
     function getDn() {
         return $this->dn;
     }
 
+    /**
+     * @param $dn
+     * @return $this
+     */
     function setDn($dn) {
         $this->dn = $dn;
+
+        return $this;
     }
 
-        public function getKey($value) 
+    /**
+     * @param $value
+     * @return null
+     */
+    public function getKey($value)
     {
         if(isset($this->reverseMetadatas[$value])) {
             return $this->reverseMetadatas[$value];
         }
+
         return null;
     }
-    
+
+    /**
+     * @param $key
+     * @param $value
+     */
     public function addMeta($key, $value)
     {
         $this->metadatas[$key] = $value;
         $this->reverseMetadatas[$value] = $key;
     }
-    
+
+    /**
+     * @param $key
+     * @return null
+     */
     public function getMeta($key)
     {
         if(isset($this->metadatas[$key])) {
             return $this->metadatas[$key];
         }
+
         return null;
     }
-    
+
+    /**
+     * @return array
+     */
     public function getMetadatas()
     {
         return $this->metadatas;
     }
-    
+
+    /**
+     * @param $metadatas
+     * @return $this
+     */
     public function setMetadatas($metadatas)
     {
         $this->metadatas = $metadatas;
+
+        return $this;
     }
 
+    /**
+     * @param $key
+     * @param $class
+     */
     public function addArrayOfLink($key, $class)
     {
         $this->arrayOfLink[$key] = $class;
     }
 
+    /**
+     * @param $key
+     * @return bool
+     */
     public function isArrayOfLink($key)
     {
         return isset($this->arrayOfLink[$key]);
     }
 
+    /**
+     * @param $key
+     * @return mixed
+     */
     public function getArrayOfLinkClass($key)
     {
         return $this->arrayOfLink[$key];
     }
 
+    /**
+     * @param $key
+     * @param $dn
+     */
     public function addSequence($key, $dn)
     {
         $this->sequence[$key] = $dn;
     }
 
+    /**
+     * @param $key
+     * @return bool
+     */
     public function isSequence($key)
     {
         return isset($this->sequence[$key]);
     }
 
+    /**
+     * @param $key
+     * @return mixed
+     */
     public function getSequence($key)
     {
         return $this->sequence[$key];
     }
 
+    /**
+     * @param $key
+     * @param $dn
+     */
     public function addParentLink($key, $dn)
     {  
         $this->parentLink[$key] = $dn;
     }
 
+    /**
+     * @return array
+     */
     public function getParentLink()
     {  
         return $this->parentLink;
     }
 
+    /**
+     * @param $key
+     * @param $regex
+     */
     public function addRegex($key, $regex)
     {
         $this->dnRegex[$key] = $regex;
     }
 
+    /**
+     * @return array
+     */
     public function getDnRegex()
     {
         return $this->dnRegex;
     }
 
+    /**
+     * @return string
+     */
     public function getRepository()
     {
         return $this->repository;
     }
 
+    /**
+     * @param $repository
+     * @return $this
+     */
     public function setRepository($repository)
     {
         $this->repository = $repository;
+
+        return $this;
     }
-    
+
+    /**
+     * @return array
+     */
     function getMust() {
         return $this->must;
     }
 
+    /**
+     * @param $must
+     * @return $this
+     */
     function setMust($must) {
         $this->must = $must;
+
+        return $this;
     }
 
     /**
@@ -205,11 +384,14 @@ class ClassMetaDataCollection
     }
 
     /**
-     * @param array $operational
+     * @param $operational
+     * @return $this
      */
     public function setOperational($operational)
     {
         $this->operational = $operational;
+
+        return $this;
     }
 
 
