@@ -1,5 +1,4 @@
 <?php
-
 namespace CarnegieLearning\LdapOrmBundle\Entity\Ldap;
 
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ArrayField;
@@ -30,6 +29,10 @@ class LdapEntity
      */
     protected $dn;
 
+    /**
+     * @var array
+     */
+    private $metaData;
 
     /**
      * LdapEntity constructor.

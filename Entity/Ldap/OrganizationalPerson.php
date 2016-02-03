@@ -1,18 +1,18 @@
 <?php
-
 namespace CarnegieLearning\LdapOrmBundle\Entity\Ldap;
 
-use Doctrine\ORM\Mapping as ORM;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ArrayField;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Attribute;
+use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Must;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ObjectClass;
-use IAM\DirectoryServicesBundle\Util\Phone;
 
 /**
  * Standard LDAP OrganizationalPerson. May be used as a Symfony user.
  * 
  * @author jgabler
+ *
  * @ObjectClass("OrganizationalPerson")
+ *
  * @codeCoverageIgnore
  */
 class OrganizationalPerson extends Person
@@ -50,7 +50,7 @@ class OrganizationalPerson extends Person
     
     /**
      * @Attribute("ou")
-     * A MUST attribute
+     * @Must
      * @var string
      */
     protected $ou;

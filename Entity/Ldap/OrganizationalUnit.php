@@ -1,18 +1,19 @@
 <?php
 namespace CarnegieLearning\LdapOrmBundle\Entity\Ldap;
 
-
-use Doctrine\ORM\Mapping as ORM;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Attribute;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ObjectClass;
 
 
 /**
- * Class to represent a person within EDS ou=people,dc=CarnegieLearning,dc=edu
+ * Class to represent a person within EDS ou=people,dc=example,dc=com
  *
  * @author jgabler
  * @author Ronald Chaplin <rchaplin@t73.biz>
+ *
  * @ObjectClass("organizationalUnit")
+ *
+ * @codeCoverageIgnore
  */
 class OrganizationalUnit extends LdapEntity {
     /**
