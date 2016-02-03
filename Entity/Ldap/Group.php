@@ -2,17 +2,18 @@
 
 namespace CarnegieLearning\LdapOrmBundle\Entity\Ldap;
 
-use Doctrine\ORM\Mapping as ORM;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ArrayField;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Attribute;
 
 /**
- * A superclass for GroupOfEntries and GroupOfNames
- * @codeCoverageIgnore
+ * Class Groups
+ *
  * @author jgabler
+ *
  * @codeCoverageIgnore
  */
-class Group extends LdapEntity {
+class Group extends LdapEntity
+{
 
     /**
      * @Attribute("businessCategory")

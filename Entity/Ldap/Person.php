@@ -11,6 +11,7 @@ use CarnegieLearning\LdapOrmBundle\Exception\UnknownUserPasswordTypeException;
  * Standard LDAP Person entry
  * 
  * @author jgabler
+ *
  * @ObjectClass("Person")
  */
 class Person extends LdapEntity
@@ -18,7 +19,7 @@ class Person extends LdapEntity
     
     /**
      * @Attribute("sn")
-     * @Must()
+     * @Must
      * @var string
      */
     protected $sn;
@@ -164,6 +165,7 @@ class Person extends LdapEntity
      */
     function setUserPassword($userPassword) {
         $this->userPassword = $userPassword;
+
         return $this;
     }
 }

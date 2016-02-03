@@ -2,7 +2,6 @@
 
 namespace CarnegieLearning\LdapOrmBundle\Entity\Ldap;
 
-use Doctrine\ORM\Mapping as ORM;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ArrayField;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Attribute;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ObjectClass;
@@ -11,7 +10,9 @@ use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ObjectClass;
  * Standard LDAP InetOrgPerson. May be used as a Symfony user.
  *
  * @codeCoverageIgnore
+ *
  * @author jgabler
+ *
  * @ObjectClass("OrganizationalPerson")
  */
 class InetOrgPerson extends OrganizationalPerson
