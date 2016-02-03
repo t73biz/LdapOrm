@@ -4,7 +4,8 @@ namespace CarnegieLearning\LdapOrmBundle\Tests\Ldap;
 
 use CarnegieLearning\LdapOrmBundle\Ldap\Client;
 use CarnegieLearning\LdapOrmBundle\Tests\SymfonyKernel;
-use Symfony\Bridge\Monolog\Logger;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Component\PropertyInfo\Tests\Fixtures\Dummy;
 
 /**
  * Class ClientTest
@@ -12,12 +13,11 @@ use Symfony\Bridge\Monolog\Logger;
  */
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
-
     use SymfonyKernel;
 
     /**
      * @covers CarnegieLearning\LdapOrmBundle\Ldap\Client::__construct
-     * @expectedException \Exception
+     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
      */
     public function testConstruct()
     {
@@ -25,64 +25,118 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers CarnegieLearning\LdapOrmBundle\Ldap\Client::__construct
-     */
-    public function testConnectReturnsResource()
-    {
-        $config = array(
-            'connection' => array(
-                'uri' => 'ldap://ldaphost.carnegielearning.com/',
-                'bind_dn' => 'cn=nobody,ou=hosted,dc=carnegielearning,dc=com',
-                'password' => 'easy2guess',
-                'password_type' => 'sha1',
-                'use_tls' => false,
-                'is_active_directory' => false,
-            )
-        );
-
-        $client = new Client($this->logger, $config);
-
-        $resource = $client->getLdapResource();
-
-        $this->assertEquals($resource, $client->connect());
-    }
-
-    /**
      * @covers CarnegieLearning\LdapOrmBundle\Ldap\Client::connect
      */
     public function testConnect()
     {
-        $config = array(
-            'connection' => array(
-                'uri' => 'ldap://ldaphost.carnegielearning.com/',
-                'bind_dn' => 'cn=nobody,ou=hosted,dc=carnegielearning,dc=com',
-                'password' => 'easy2guess',
-                'password_type' => 'sha1',
-                'use_tls' => false,
-                'is_active_directory' => false,
-            )
-        );
+        $client = $this->container->get('carnegie_learning_ldap_orm.client');
 
-        new Client($this->logger, $config);
+        $this->assertNotFalse($client->connect());
     }
 
     /**
      * @covers CarnegieLearning\LdapOrmBundle\Ldap\Client::connect
-     * @expectedException \Exception
      */
-    public function testConnectTlsFailure()
+    public function testConnectDoesNotReconnect()
     {
-        $config = array(
-            'connection' => array(
-                'uri' => 'ldap://ldaphost.carnegielearning.com/',
-                'bind_dn' => 'cn=nobody,ou=hosted,dc=carnegielearning,dc=com',
-                'password' => 'easy2guess',
-                'password_type' => 'sha1',
-                'use_tls' => true,
-                'is_active_directory' => false,
-            )
-        );
+        $client = $this->container->get('carnegie_learning_ldap_orm.client');
+        $client->connect();
+        $resource = $client->getLdapResource();
+        $client->connect();
+        $resource2 = $client->getLdapResource();
 
-        new Client($this->logger, $config);
+        $this->assertEquals($resource, $resource2);
     }
+
+    /**
+     * @covers CarnegieLearning\LdapOrmBundle\Ldap\Client::connect
+     * @expectedException \CarnegieLearning\LdapOrmBundle\Exception\InvalidLdapConnectionException
+     */
+    public function testConnectThrowsInvalidLdapConnectionException()
+    {
+
+        $coreMock = $this->getMockBuilder('\CarnegieLearning\LdapOrmBundle\Ldap\Core')
+            ->getMock();
+
+        $coreMock->expects($this->once())
+            ->method('connect')
+            ->will($this->returnValue(false));
+
+        $client = $this->container->get('carnegie_learning_ldap_orm.client');
+
+        $client->setLdap($coreMock);
+        $client->connect();
+
+        $this->assertFalse($client->getLdapResource());
+    }
+
+    /**
+     * @covers CarnegieLearning\LdapOrmBundle\Ldap\Client::connect
+     * @expectedException \CarnegieLearning\LdapOrmBundle\Exception\InvalidLdapTlsConnectionException
+     */
+    public function testConnectThrowsInvalidLdapTlsConnectionException()
+    {
+
+        $coreMock = $this->getMockBuilder('\CarnegieLearning\LdapOrmBundle\Ldap\Core')
+            ->getMock();
+
+        $coreMock->expects($this->once())
+            ->method('startTls')
+            ->will($this->returnValue(false));
+
+        $coreMock->expects($this->once())
+            ->method('connect')
+            ->will($this->returnValue(null));
+
+        $client = $this->container->get('carnegie_learning_ldap_orm.client');
+        $client->setUseTls(true);
+        $client->setLdap($coreMock);
+        $client->connect();
+    }
+
+    /**
+     * @covers CarnegieLearning\LdapOrmBundle\Ldap\Client::connect
+     * @expectedException \CarnegieLearning\LdapOrmBundle\Exception\InvalidLdapBindException
+     */
+    public function testConnectThrowsInvalidLdapBindException()
+    {
+
+        $coreMock = $this->getMockBuilder('\CarnegieLearning\LdapOrmBundle\Ldap\Core')
+            ->getMock();
+
+        $coreMock->expects($this->once())
+            ->method('bind')
+            ->will($this->returnValue(false));
+
+        $coreMock->expects($this->once())
+            ->method('connect')
+            ->will($this->returnValue(null));
+
+        $client = $this->container->get('carnegie_learning_ldap_orm.client');
+        $client->setLdap($coreMock);
+        $client->connect();
+    }
+
+    /**
+     * @covers CarnegieLearning\LdapOrmBundle\Ldap\Client::setLdap
+     */
+    public function testSetLdapHandlesNull()
+    {
+        $client = $this->container->get('carnegie_learning_ldap_orm.client');
+        $ldap = $client->setLdap();
+
+        $this->assertInstanceOf('\CarnegieLearning\LdapOrmBundle\Ldap\Core', $ldap);
+    }
+
+    /**
+     * @covers CarnegieLearning\LdapOrmBundle\Ldap\Client::setLdap
+     */
+    public function testSetLdapHandlesSuppliedObject()
+    {
+        $client = $this->container->get('carnegie_learning_ldap_orm.client');
+        $ldap = $client->setLdap(new Dummy());
+
+        $this->assertInstanceOf('\Symfony\Component\PropertyInfo\Tests\Fixtures\Dummy', $ldap);
+    }
+
 }

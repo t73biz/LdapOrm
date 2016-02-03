@@ -98,6 +98,7 @@ class LdapEntityManager
         $this->logger = $logger;
         $this->reader = $reader;
         $this->client = $client;
+        $this->client->connect();
     }
 
 
