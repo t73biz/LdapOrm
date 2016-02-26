@@ -674,6 +674,10 @@ class LdapEntityManager
             $this->pageMore = !empty($this->pageCookie);
         }
 
+        if($entries['count'] == 1) {
+            return $entities[0];
+        }
+
         return $entities;
     }
 
@@ -769,7 +773,6 @@ class LdapEntityManager
             0);
     }
 
-    
     public function getIterator(LdapFilter $filter, $entityName) {
         if (empty($this->iterator)) {
             $this->iterator = new LdapIterator($filter, $entityName, $this);
