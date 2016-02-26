@@ -27,6 +27,4 @@ namespace CarnegieLearning\LdapOrmBundle\Annotation\Ldap;
  * @Annotation
  * @author Mathieu GOULIN <mathieu.goulin@gadz.org>
  */
-final class Dn extends BaseAnnotation
-{
-}
+final class Dn extends BaseAnnotation {}

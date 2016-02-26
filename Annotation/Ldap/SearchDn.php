@@ -7,6 +7,4 @@ namespace CarnegieLearning\LdapOrmBundle\Annotation\Ldap;
  * @Annotation
  * @author Jason Gabler <jason.gabler@ucsf.edu>
  */
-final class SearchDn extends BaseAnnotation
-{
-}
+final class SearchDn extends BaseAnnotation {}

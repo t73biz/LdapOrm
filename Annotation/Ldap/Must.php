@@ -8,6 +8,4 @@ namespace CarnegieLearning\LdapOrmBundle\Annotation\Ldap;
  * @Annotation
  * @author jasongabler@gmail.com
  */
-final class Must
-{
-}
+final class Must extends BaseAnnotation {}
