@@ -1,0 +1,16 @@
+{
+  "name": "security-harness",
+  "version": "1.0.0",
+  "description": "security-harness",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ronald Chaplin",
+  "license": "NONE",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-phpunit": "^0.3.6"
+  }
+}

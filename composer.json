@@ -29,5 +29,8 @@
     },
     "minimum-stability": "dev",
     "target-dir": "CarnegieLearning/LdapOrmBundle",
-    "extra": {}
+    "extra": {},
+    "require-dev": {
+        "phpunit/phpunit": "^4.8"
+    }
 }
