@@ -60,7 +60,7 @@ trait SymfonyKernel
      */
     protected function getKernelClass()
     {
-        return \AppKernel::class;
+        return AppKernel::class;
     }
 
     /**

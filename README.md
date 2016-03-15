@@ -24,9 +24,24 @@ Requires PHP5.5+ and Symphony 2.8+
 * Install using composer
     * <code>$ composer update carnegielearning/ldap-orm-bundle</code>
 
+### Testing Requirements
+
+It is suggested that you run the unit tests using grunt. This will allow for an in memory ldap server to be stood up in place and facilitate file watching as well.
+    
+* <a href="https://docs.npmjs.com/getting-started/installing-node">Install Node.js and npm</a>
+* Install Grunt into the global namespace. Refer to [the grunt documentation](http://gruntjs.com/getting-started) for help.
+    * ```npm install -g grunt-cli```
+* Run the installation for npm.
+    * ```npm install```
+* Be sure that a java binary exists within the development environment. Please refer to [the ldap sdk](https://docs.ldap.com/ldap-sdk/docs/index.html) form more information.
+* Run grunt. This will run a file watcher that watches for changes in the source folders/files as well as test folders/files. To exit be sure to use ctrl-c as this will kill the in-memory-ldap server
+    * ```grunt```
+* It is possible to also run just the unit tests with out the file watcher portion. This can be accomplished with
+    * ```grunt test```
+    
 ## Documentation
 
-### Develop with UcsfLdapOrm
+### Develop with LdapOrm
 
 #### Configure an LDAP service in config.yml
 

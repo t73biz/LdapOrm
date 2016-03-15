@@ -3,7 +3,7 @@
 namespace CarnegieLearning\LdapOrmBundle\Tests\Ldap;
 
 use CarnegieLearning\LdapOrmBundle\Ldap\Client;
-use CarnegieLearning\LdapOrmBundle\Tests\SymfonyKernel;
+use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\PropertyInfo\Tests\Fixtures\Dummy;
 
@@ -13,7 +13,34 @@ use Symfony\Component\PropertyInfo\Tests\Fixtures\Dummy;
  */
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
-    use SymfonyKernel;
+    /**
+     * @var Client
+     */
+    protected $client;
+
+    /**
+     * @var Logger
+     */
+    protected $loggerMock;
+
+    public function setUp()
+    {
+        $config = [
+            'connection' => [
+                'bind_dn' => 'uid=kvaughan,ou=People,dc=example,dc=com',
+                'is_active_directory' => false,
+                'password' => 'bribery',
+                'password_type' => 'plaintext',
+                'uri' => 'ldap://localhost:1234',
+                'use_tls' => false
+            ]
+        ];
+
+        $this->loggerMock = $this->getMockBuilder('\Symfony\Bridge\Monolog\Logger')
+            ->setConstructorArgs(['name' => 'mockLogger'])
+            ->getMock();
+        $this->client = new Client($this->loggerMock, $config);
+    }
 
     /**
      * @covers CarnegieLearning\LdapOrmBundle\Ldap\Client::__construct
@@ -21,7 +48,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function testConstruct()
     {
-        new Client($this->logger, []);
+        new Client($this->loggerMock, []);
     }
 
     /**
@@ -29,9 +56,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function testConnect()
     {
-        $client = $this->container->get('carnegie_learning_ldap_orm.client');
-
-        $this->assertNotFalse($client->connect());
+        $this->assertNotFalse($this->client->connect());
     }
 
     /**
@@ -39,11 +64,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function testConnectDoesNotReconnect()
     {
-        $client = $this->container->get('carnegie_learning_ldap_orm.client');
-        $client->connect();
-        $resource = $client->getLdapResource();
-        $client->connect();
-        $resource2 = $client->getLdapResource();
+        $this->client->connect();
+        $resource = $this->client->getLdapResource();
+        $this->client->connect();
+        $resource2 = $this->client->getLdapResource();
 
         $this->assertEquals($resource, $resource2);
     }
@@ -62,12 +86,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             ->method('connect')
             ->will($this->returnValue(false));
 
-        $client = $this->container->get('carnegie_learning_ldap_orm.client');
+        $this->client->setLdap($coreMock);
+        $this->client->connect();
 
-        $client->setLdap($coreMock);
-        $client->connect();
-
-        $this->assertFalse($client->getLdapResource());
+        $this->assertFalse($this->client->getLdapResource());
     }
 
     /**
@@ -88,10 +110,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             ->method('connect')
             ->will($this->returnValue(null));
 
-        $client = $this->container->get('carnegie_learning_ldap_orm.client');
-        $client->setUseTls(true);
-        $client->setLdap($coreMock);
-        $client->connect();
+        $this->client->setUseTls(true);
+        $this->client->setLdap($coreMock);
+        $this->client->connect();
     }
 
     /**
@@ -112,9 +133,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             ->method('connect')
             ->will($this->returnValue(null));
 
-        $client = $this->container->get('carnegie_learning_ldap_orm.client');
-        $client->setLdap($coreMock);
-        $client->connect();
+        $this->client->setLdap($coreMock);
+        $this->client->connect();
     }
 
     /**
@@ -122,8 +142,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetLdapHandlesNull()
     {
-        $client = $this->container->get('carnegie_learning_ldap_orm.client');
-        $ldap = $client->setLdap();
+        $ldap = $this->client->setLdap();
 
         $this->assertInstanceOf('\CarnegieLearning\LdapOrmBundle\Ldap\Core', $ldap);
     }
@@ -133,8 +152,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetLdapHandlesSuppliedObject()
     {
-        $client = $this->container->get('carnegie_learning_ldap_orm.client');
-        $ldap = $client->setLdap(new Dummy());
+        $ldap = $this->client->setLdap(new Dummy());
 
         $this->assertInstanceOf('\Symfony\Component\PropertyInfo\Tests\Fixtures\Dummy', $ldap);
     }

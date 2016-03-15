@@ -9,13 +9,10 @@
 namespace CarnegieLearning\LdapOrmBundle\Tests\Ldap;
 
 
-use CarnegieLearning\LdapOrmBundle\Tests\SymfonyKernel;
 use CarnegieLearning\LdapOrmBundle\Ldap\Converter;
 
 class LdapEntityManagerTest extends \PHPUnit_Framework_TestCase
 {
-
-    use SymfonyKernel;
 
     public function testAdDateConversion() {
         $adTimestamp = '130898490540000000.0Z';
