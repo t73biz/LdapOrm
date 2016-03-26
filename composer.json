@@ -1,5 +1,5 @@
 {
-    "name": "cli/ldaporm-bundle",
+    "name": "carnegielearning/ldap-orm-bundle",
     "type": "symfony-bundle",
     "description": "Another LDAP ORM for Symfony2",
     "keywords": ["ucsf", "orm", "ldap", "carnegie learning"],
@@ -22,13 +22,16 @@
         "symfony/framework-bundle": "2.*",
         "symfony/class-loader": "2.*",
         "symfony/yaml": "2.*",
-        "symfony/monolog-bundle": "2.*"
+        "symfony/monolog-bundle": "^2.9",
+        "symfony/property-info": "^3.0"
     },
     "autoload": {
         "psr-0": { "CarnegieLearning\\LdapOrmBundle": "" }
     },
     "minimum-stability": "dev",
     "target-dir": "CarnegieLearning/LdapOrmBundle",
-    "extra": {
+    "extra": {},
+    "require-dev": {
+        "phpunit/phpunit": "^4.8"
     }
 }

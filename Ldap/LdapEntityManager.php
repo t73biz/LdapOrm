@@ -101,7 +101,6 @@ class LdapEntityManager
         $this->client->connect();
     }
 
-
     /**
      * Find if an entity exists in LDAP without doing an LDAP search that generates
      * warnings regarding an non-existent DN if turns out that the entity does not exist.
