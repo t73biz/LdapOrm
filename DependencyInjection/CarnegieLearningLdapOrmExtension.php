@@ -2,6 +2,7 @@
 
 namespace CarnegieLearning\LdapOrmBundle\DependencyInjection;
 
+use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
@@ -53,5 +54,7 @@ class CarnegieLearningLdapOrmExtension extends Extension
         }
 
         $container->setParameter('carnegie_learning_ldap_orm.connection.is_active_directory', $isActiveDirectory);
+        AnnotationRegistry::registerFile(__DIR__ . '/../Annotation/Ldap/Mapping/LdapAnnotations.php');
+        AnnotationRegistry::registerAutoloadNamespace('CarnegieLearning\LdapOrmBundle\Annotation\Ldap', __DIR__ . '/../Annotation/Ldap');
     }
 }

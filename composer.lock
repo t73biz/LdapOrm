@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b29416d1ea8b0060997f4bc5ddea6c7e",
-    "content-hash": "70b1dd3514d50fb3b591136c65082d54",
+    "hash": "904e0d32f5e60d68943da8e8e425303d",
+    "content-hash": "eec6817673d02b35954c69a9d12469c7",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -208,7 +208,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/81045d59740a686121d85281e7de245d49b1236a",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/a9ccae25cbb5c0af6f2a549e4cc3ee6628c253ab",
                 "reference": "81045d59740a686121d85281e7de245d49b1236a",
                 "shasum": ""
             },
@@ -661,7 +661,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/807d6df3ce391f4f80c58054fbf4f5a34efa4ef5",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/9002dcf018d884d294b1ef20a6f968efc1128f39",
                 "reference": "807d6df3ce391f4f80c58054fbf4f5a34efa4ef5",
                 "shasum": ""
             },
@@ -819,7 +819,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/framework-bundle/zipball/dce70bdfa1f9dff69d0d824603333213ddae6548",
+                "url": "https://api.github.com/repos/symfony/framework-bundle/zipball/44a70ccd1a02ecabc4c92f0faceb71ec0a8f5314",
                 "reference": "dce70bdfa1f9dff69d0d824603333213ddae6548",
                 "shasum": ""
             },
@@ -1105,7 +1105,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/monolog-bundle/zipball/d4d933a76b7bcceb806cfe80aeaf73438744807e",
+                "url": "https://api.github.com/repos/symfony/monolog-bundle/zipball/82fd8f36e2cccbe94faf237403c48052d4d4b77e",
                 "reference": "d4d933a76b7bcceb806cfe80aeaf73438744807e",
                 "shasum": ""
             },
@@ -1513,7 +1513,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/routing/zipball/fa1e9a8173cf0077dd995205da453eacd758fdf6",
+                "url": "https://api.github.com/repos/symfony/routing/zipball/18d46fd0dc93001e9180415e31ad779ca693e22b",
                 "reference": "fa1e9a8173cf0077dd995205da453eacd758fdf6",
                 "shasum": ""
             },
@@ -1712,7 +1712,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/stopwatch/zipball/4a204804952ff267ace88cf499e0b4bb302a475e",
+                "url": "https://api.github.com/repos/symfony/stopwatch/zipball/6015187088421e9499d8f8316bdb396f8b806c06",
                 "reference": "4a204804952ff267ace88cf499e0b4bb302a475e",
                 "shasum": ""
             },
@@ -1761,7 +1761,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/templating/zipball/46abddbff3e7cae4d1d5a9f9ad0cd106f3c5c496",
+                "url": "https://api.github.com/repos/symfony/templating/zipball/208c345a1bcb66b8fc4609b5143058620ea95b2d",
                 "reference": "46abddbff3e7cae4d1d5a9f9ad0cd106f3c5c496",
                 "shasum": ""
             },
@@ -1872,25 +1872,25 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "2.8.x-dev",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "584e52cb8f788a887553ba82db6caacb1d6260bb"
+                "reference": "38aebd1045f91caaf25db0164e2703b21fb5359d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/584e52cb8f788a887553ba82db6caacb1d6260bb",
-                "reference": "584e52cb8f788a887553ba82db6caacb1d6260bb",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/38aebd1045f91caaf25db0164e2703b21fb5359d",
+                "reference": "38aebd1045f91caaf25db0164e2703b21fb5359d",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.9"
+                "php": ">=5.5.9"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.8-dev"
+                    "dev-master": "3.1-dev"
                 }
             },
             "autoload": {
@@ -1917,7 +1917,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2016-03-04 07:54:35"
+            "time": "2016-03-10 14:06:18"
         }
     ],
     "packages-dev": [
@@ -2336,7 +2336,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/7718ed2bbb019dc17a802ef035a461eaac9858fa",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/1a1b63266c046e1856fd03812a4e0ac2b51aa2d5",
                 "reference": "7718ed2bbb019dc17a802ef035a461eaac9858fa",
                 "shasum": ""
             },
