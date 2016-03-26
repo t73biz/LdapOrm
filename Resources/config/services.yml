@@ -20,10 +20,12 @@ parameters:
 
 services:
     carnegie_learning_ldap_orm.client:
-            class: CarnegieLearning\LdapOrmBundle\Ldap\Client
-            arguments: ['@logger', %carnegie_learning_ldap_orm%]
-
+        class: CarnegieLearning\LdapOrmBundle\Ldap\Client
+        arguments: ['@logger', %carnegie_learning_ldap_orm%]
+    carnegie_learning_ldap_orm.annotation_reader:
+        class: Doctrine\Common\Annotations\AnnotationReader
+        arguments:
     carnegie_learning_ldap_orm.entity_manager:
-            class: CarnegieLearning\LdapOrmBundle\Ldap\LdapEntityManager
-            arguments: [ '@logger', '@annotation_reader', '@carnegie_learning_ldap_orm.client'  ]
+        class: CarnegieLearning\LdapOrmBundle\Ldap\LdapEntityManager
+        arguments: [ '@logger', '@carnegie_learning_ldap_orm.annotation_reader', '@carnegie_learning_ldap_orm.client'  ]
 
