@@ -9,21 +9,31 @@
 #            password: aSecretWord
 #            password_type: plaintext
 parameters:
-    carnegie_learning_ldap_orm:
-        connection:
-            uri: %carnegie_learning_ldap_orm.connection.uri%
-            bind_dn: %carnegie_learning_ldap_orm.connection.bind_dn%
-            password: %carnegie_learning_ldap_orm.connection.password%
-            password_type: %carnegie_learning_ldap_orm.connection.password_type%
-            use_tls: %carnegie_learning_ldap_orm.connection.use_tls%
-            is_active_directory: %carnegie_learning_ldap_orm.connection.is_active_directory%
+  carnegie_learning_ldap_orm:
+    connection:
+      uri: %carnegie_learning_ldap_orm.connection.uri%
+      bind_dn: %carnegie_learning_ldap_orm.connection.bind_dn%
+      password: %carnegie_learning_ldap_orm.connection.password%
+      password_type: %carnegie_learning_ldap_orm.connection.password_type%
+      use_tls: %carnegie_learning_ldap_orm.connection.use_tls%
+      is_active_directory: %carnegie_learning_ldap_orm.connection.is_active_directory%
 
 services:
-    carnegie_learning_ldap_orm.client:
-            class: CarnegieLearning\LdapOrmBundle\Ldap\Client
-            arguments: ['@logger', %carnegie_learning_ldap_orm%]
+  carnegie_learning_ldap_orm.command.ldap_server_run_command:
+    class: CarnegieLearning\LdapOrmBundle\Command\LdapServerRunCommand
+    arguments:
+      - '%ldap_server.bind_address%'
+      - '%ldap_server.port%'
+      - '%ldap_server.base_dn%'
+      - '%ldap_server.ldif%'
+    tags:
+      - { name: console.command }
 
-    carnegie_learning_ldap_orm.entity_manager:
-            class: CarnegieLearning\LdapOrmBundle\Ldap\LdapEntityManager
-            arguments: [ '@logger', '@annotation_reader', '@carnegie_learning_ldap_orm.client'  ]
+  carnegie_learning_ldap_orm.client:
+    class: CarnegieLearning\LdapOrmBundle\Ldap\Client
+    arguments: ['@logger', %carnegie_learning_ldap_orm%]
+
+  carnegie_learning_ldap_orm.entity_manager:
+    class: CarnegieLearning\LdapOrmBundle\Ldap\LdapEntityManager
+    arguments: [ '@logger', '@annotation_reader', '@carnegie_learning_ldap_orm.client'  ]
 

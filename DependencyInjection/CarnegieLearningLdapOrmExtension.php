@@ -53,5 +53,15 @@ class CarnegieLearningLdapOrmExtension extends Extension
         }
 
         $container->setParameter('carnegie_learning_ldap_orm.connection.is_active_directory', $isActiveDirectory);
+
+        $this->configureServerCommand($config['server'], $container);
+    }
+
+    protected function configureServerCommand(array $config, ContainerBuilder $container)
+    {
+        $container->setParameter('ldap_server.bind_address', $config['bind_address']);
+        $container->setParameter('ldap_server.port', $config['port']);
+        $container->setParameter('ldap_server.base_dn', $config['base_dn']);
+        $container->setParameter('ldap_server.ldif', $config['ldif']);
     }
 }

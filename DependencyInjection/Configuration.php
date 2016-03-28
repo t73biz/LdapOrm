@@ -32,6 +32,15 @@ class Configuration implements ConfigurationInterface
                         ->booleanNode('is_active_directory')->defaultFalse()->end()
                     ->end()
                 ->end()
+                ->arrayNode('server')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('bind_address')->defaultValue('127.0.0.1')->end()
+                        ->scalarNode('port')->defaultValue('6389')->end()
+                        ->scalarNode('base_dn')->defaultValue('dc=example,dc=com')->end()
+                        ->scalarNode('ldif')->defaultValue('@CarnegieLearningLdapOrmBundle/Resources/ldap/sample.ldif')
+                    ->end()
+                ->end()
             ->end()
         ;
 
