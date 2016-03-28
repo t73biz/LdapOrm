@@ -4,7 +4,6 @@
     "description": "Another LDAP ORM for Symfony2",
     "keywords": ["ucsf", "orm", "ldap", "carnegie learning"],
     "license": "GPL",
-    "version": "0.1.0",
     "authors": [
         {
             "name": "UCSF IT Identity & Access Management",
@@ -15,23 +14,42 @@
             "email": "rchaplin@t73.biz"
         }
     ],
-    "require": {
-        "php": ">=5.3.9",
-        "symfony/http-kernel": "2.*",
-        "symfony/dependency-injection": "2.*",
-        "symfony/framework-bundle": "2.*",
-        "symfony/class-loader": "2.*",
-        "symfony/yaml": "2.*",
-        "symfony/monolog-bundle": "^2.9",
-        "symfony/property-info": "^3.0"
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "bin-dir": "bin",
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "5.5.9"
+        }
     },
     "autoload": {
-        "psr-0": { "CarnegieLearning\\LdapOrmBundle": "" }
+        "psr-4": {
+            "CarnegieLearning\\LdapOrmBundle\\": ""
+        }
     },
-    "minimum-stability": "dev",
-    "target-dir": "CarnegieLearning/LdapOrmBundle",
-    "extra": {},
+    "require": {
+        "php": ">=5.5.9"
+    },
     "require-dev": {
-        "phpunit/phpunit": "^4.8"
+        "jakub-onderka/php-parallel-lint": "~0.8",
+        "phpunit/phpunit": "~4.8|~5.0",
+        "squizlabs/php_codesniffer": "~2.1.0",
+        "symfony/dependency-injection": "^2.8|^3.0",
+        "symfony/monolog-bundle": "^2.8|^3.0",
+        "symfony/property-info": "^3.0"
+    },
+    "scripts": {
+        "test": [
+            "composer validate --no-interaction",
+            "parallel-lint kernel",
+            "phpunit",
+            "phpcs --encoding=utf-8 --standard=PSR2 --report-checkstyle=reports/checkstyle-phpcs.xml --report-full --extensions=php src/* tests/*"
+        ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0-dev"
+        }
     }
 }
