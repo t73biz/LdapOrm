@@ -19,6 +19,7 @@ parameters:
       is_active_directory: %carnegie_learning_ldap_orm.connection.is_active_directory%
 
 services:
+<<<<<<< HEAD
   carnegie_learning_ldap_orm.command.ldap_server_run_command:
     class: CarnegieLearning\LdapOrmBundle\Command\LdapServerRunCommand
     arguments:
@@ -36,4 +37,15 @@ services:
   carnegie_learning_ldap_orm.entity_manager:
     class: CarnegieLearning\LdapOrmBundle\Ldap\LdapEntityManager
     arguments: [ '@logger', '@annotation_reader', '@carnegie_learning_ldap_orm.client'  ]
+=======
+    carnegie_learning_ldap_orm.client:
+        class: CarnegieLearning\LdapOrmBundle\Ldap\Client
+        arguments: ['@logger', %carnegie_learning_ldap_orm%]
+    carnegie_learning_ldap_orm.annotation_reader:
+        class: Doctrine\Common\Annotations\AnnotationReader
+        arguments:
+    carnegie_learning_ldap_orm.entity_manager:
+        class: CarnegieLearning\LdapOrmBundle\Ldap\LdapEntityManager
+        arguments: [ '@logger', '@carnegie_learning_ldap_orm.annotation_reader', '@carnegie_learning_ldap_orm.client'  ]
+>>>>>>> 604cee7da1c07e65995e1ea27283469ed04e9f70
 
