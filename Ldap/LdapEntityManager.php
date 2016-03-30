@@ -40,7 +40,6 @@ use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\SearchDn;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Operational;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Sequence;
 use CarnegieLearning\LdapOrmBundle\Components\GenericIterator;
-use CarnegieLearning\LdapOrmBundle\Components\TwigString;
 use CarnegieLearning\LdapOrmBundle\Entity\DateTimeDecorator;
 use CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter;
 use CarnegieLearning\LdapOrmBundle\Mapping\ClassMetaDataCollection;
@@ -57,13 +56,31 @@ use Symfony\Bridge\Monolog\Logger;
  */
 class LdapEntityManager
 {
+    /**
+     *
+     */
     const DEFAULT_MAX_RESULT_COUNT      = 100;
 
-    private $pageCookie 	= "";
-    private $pageMore    	= FALSE;
+    /**
+     * @var string
+     */
+    private $pageCookie;
+
+    /**
+     * @var
+     */
+    private $pageMore;
+
+    /**
+     * @var Reader
+     */
     private $reader;
-    
+
+    /**
+     * @var null
+     */
     private $iterator = Null;
+
     /**
      * @var Client
      */
@@ -81,9 +98,8 @@ class LdapEntityManager
         $this->logger = $logger;
         $this->reader = $reader;
         $this->client = $client;
-        $this->twig   = new TwigString();
+        $this->client->connect();
     }
-
 
     /**
      * Find if an entity exists in LDAP without doing an LDAP search that generates
@@ -247,17 +263,7 @@ class LdapEntityManager
             if($value == null) {
                 if($instanceMetadataCollection->isSequence($instanceMetadataCollection->getKey($varname))) {
 
-                    $sequence = $this->renderString($instanceMetadataCollection->getSequence($instanceMetadataCollection->getKey($varname)), array(
-                        'entity' => $instance,
-                        /*
-                         * In the original source code for the bundle upon which CarnegieLearningLdapOrm is based, it was
-                         * assumed that you'd only be looking for records under a single base DN. Therefore,
-                         * configuration for the DN was put into configuration files. This bundle permits you to
-                         * search any number of base DNsw
-                         *
-                        'baseDN' => $this->baseDN,
-                         */
-                    ));
+                    $sequence = $instanceMetadataCollection->getSequence($instanceMetadataCollection->getKey($varname));
 
                     $value = (int) $this->generateSequenceValue($sequence);
                     $instance->$setter($value);
@@ -327,15 +333,13 @@ class LdapEntityManager
 
         $classAnnotations = $this->reader->getClassAnnotations($r);
 
-        $dnModel = '';
+        $entityDn = '';
         foreach ($classAnnotations as $classAnnotation) {
             if ($classAnnotation instanceof Dn) {
-                $dnModel = $classAnnotation->getValue();
+                $entityDn = $classAnnotation->getValue();
                 break;
             }
         }
-
-        $entityDn =  $this->renderString($dnModel, array('entity' => $instance));
 
         return $entityDn;
     }
@@ -561,7 +565,7 @@ class LdapEntityManager
     /**
      * The core of ORM behavior for this bundle: retrieve data
      * from LDAP and convert results into objects.
-     * 
+     *
      * Options maybe:
      *
      * attributes (array): array of attribute types (strings)
@@ -577,11 +581,11 @@ class LdapEntityManager
      * @param string $entityName
      * @param array $options
      * @return array
+     * @throws MissingSearchDnException
      */
     public function retrieve($entityName, $options = array())
     {
         $paging = !empty($options['pageSize']);
-
         $instanceMetadataCollection = $this->getClassMetadata($entityName);
 
         // Discern max result size
@@ -596,22 +600,22 @@ class LdapEntityManager
                 $this->pageCookie = $options['pageCookie'];
             }
 
-            $this->connect();
             ldap_control_paged_result($this->client->getLdapResource(), $options['pageSize'], $options['pageCritical'], $this->pageCookie);
         }
 
         // Discern subentryNodes for substituing into searchDN
         $subentryNodes = empty($options['subentryNodes']) ? array() : $options['subentryNodes'];
 
+
         // Discern search DN
         if (isset($options['searchDn'])) {
             $searchDn = $options['searchDn'];
         } else {
-            $searchDn = $this->renderString($instanceMetadataCollection->getSearchDn(), array('entity' => $subentryNodes));
+            $searchDn = $instanceMetadataCollection->getSearchDn();
         }
 
         if (empty($searchDn)) {
-             throw new MissingSearchDnException('Could not discern search DN while searching for '.$entityName);
+             throw new MissingSearchDnException('Could not discern search DN while searching for ' . $entityName);
         }
         
         // Discern LDAP filter
@@ -669,6 +673,10 @@ class LdapEntityManager
             $this->pageMore = !empty($this->pageCookie);
         }
 
+        if($entries['count'] == 1) {
+            return $entities[0];
+        }
+
         return $entities;
     }
 
@@ -703,8 +711,6 @@ class LdapEntityManager
      */
     public function retrieveByDn($dn, $entityName, $max = self::DEFAULT_MAX_RESULT_COUNT, $objectClass = "*")
     {
-        // Connect if needed
-        $this->connect();
 
         $instanceMetadataCollection = $this->getClassMetadata($entityName);
 
@@ -757,16 +763,15 @@ class LdapEntityManager
 
     public function doRawLdapSearch($rawFilter, $attributes, $count, $searchDN)
     {
-        $this->logger->info(sprintf("request on ldap root:%s with filter:%s", $searchDN, $rawFilter));
+        $this->logger->info(sprintf("Request on ldap root:%s with filter:%s", $searchDN, $rawFilter));
 
-        return @ldap_search($this->client->getLdapResource(),
+        return ldap_search($this->client->getLdapResource(),
             $searchDN,
             $rawFilter,
             $attributes,
             0);
     }
 
-    
     public function getIterator(LdapFilter $filter, $entityName) {
         if (empty($this->iterator)) {
             $this->iterator = new LdapIterator($filter, $entityName, $this);

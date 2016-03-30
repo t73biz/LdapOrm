@@ -1,11 +1,17 @@
 <?php
-
 namespace CarnegieLearning\LdapOrmBundle\Ldap;
 
-
+use CarnegieLearning\LdapOrmBundle\Exception\InvalidLdapBindException;
+use CarnegieLearning\LdapOrmBundle\Exception\InvalidLdapConnectionException;
+use CarnegieLearning\LdapOrmBundle\Exception\InvalidLdapTlsConnectionException;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Bridge\Monolog\Logger;
 
-class Client
+/**
+ * Class Client
+ * @package CarnegieLearning\LdapOrmBundle\Ldap
+ */
+class Client implements ClientInterface
 {
     /**
      * @var string
@@ -16,6 +22,11 @@ class Client
      * @var bool
      */
     private $isActiveDirectory;
+
+    /**
+     * @var Core
+     */
+    private $ldap;
 
     /**
      * @var Resource
@@ -51,9 +62,17 @@ class Client
      * Client constructor.
      * @param Logger $logger
      * @param array $config
+     * @throws InvalidConfigurationException
+     *
+     * @codeCoverageIgnore
      */
-    public function __construct(Logger $logger, array  $config)
+    public function __construct(Logger $logger, array $config)
     {
+        if(empty($config)) {
+            throw new InvalidConfigurationException('The configuration for the LDAP Client can not be empty.');
+        }
+
+        $this->setLdap();
         $this->logger           = $logger;
         $this->bindDN     	    = $config['connection']['bind_dn'];
         $this->isActiveDirectory= $config['connection']['is_active_directory'];
@@ -61,42 +80,49 @@ class Client
         $this->passwordType     = $config['connection']['password_type'];
         $this->uri        	    = $config['connection']['uri'];
         $this->useTLS     	    = $config['connection']['use_tls'];
-
-        $this->connect();
+        $this->ldapResource     = false;
     }
 
     /**
      * Connect to LDAP service
-     * @throws /Exception
+     *
+     * @throws InvalidLdapConnectionException, InvalidLdapTlsConnectionException, InvalidLdapBindException
      */
-    private function connect()
+    public function connect()
     {
         // Don't permit multiple connect() calls to run
         if ($this->ldapResource) {
             return $this->ldapResource;
         }
 
-        $this->ldapResource = ldap_connect($this->uri);
-        ldap_set_option($this->ldapResource, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $this->ldapResource = $this->ldap->connect($this->uri);
+
+        if($this->ldapResource === false) {
+            throw new InvalidLdapConnectionException('Unable to enable establish LDAP connection.');
+        }
+
+        $this->ldap->setOption($this->ldapResource, LDAP_OPT_PROTOCOL_VERSION, 3);
 
         // Switch to TLS, if configured
         if ($this->useTLS) {
-            $tlsStatus = ldap_start_tls($this->ldapResource);
-            if (!$tlsStatus) {
-                throw new \Exception('Unable to enable TLS for LDAP connection.');
+            if(!$this->ldap->startTls($this->ldapResource)) {
+                throw new InvalidLdapTlsConnectionException('Unable to enable TLS for LDAP connection.');
             }
+
             $this->logger->info('TLS enabled for LDAP connection.');
         }
 
-        $r = ldap_bind($this->ldapResource, $this->bindDN, $this->password);
-        if($r === false) {
-            throw new \Exception('Cannot connect to LDAP server: ' . $this->uri . ' as ' . $this->bindDN . '/"' . $this->password . '".');
+        if(!$this->ldap->bind($this->ldapResource, $this->bindDN, $this->password)) {
+            throw new InvalidLdapBindException('Cannot connect to LDAP server: ' . $this->uri . ' as ' . $this->bindDN . '/"' . $this->password . '".');
         }
+
         $this->logger->debug('Connected to LDAP server: ' . $this->uri . ' as ' . $this->bindDN . ' .');
     }
 
     /**
-     * @return Resource
+     * @return mixed
+     *
+     * @codeCoverageIgnore
      */
     public function getLdapResource()
     {
@@ -105,10 +131,38 @@ class Client
 
     /**
      * @return bool
+     *
+     * @codeCoverageIgnore
      */
     public function getIsActiveDirectory()
     {
         return $this->isActiveDirectory;
     }
 
+    /**
+     * This is needed to implement UnitTest Mocking
+     *
+     * @param null $ldapCore
+     * @return Core
+     */
+    public function setLdap($ldapCore = null)
+    {
+        if(null == $ldapCore) {
+            $this->ldap = new Core();
+        } else {
+            $this->ldap = $ldapCore;
+        }
+
+        return $this->ldap;
+    }
+
+    /**
+     * @param $useTLS
+     *
+     * @codeCoverageIgnore
+     */
+    public function setUseTls($useTLS)
+    {
+        $this->useTLS = $useTLS;
+    }
 }

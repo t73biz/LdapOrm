@@ -1,8 +1,11 @@
 <?php
-
 namespace CarnegieLearning\LdapOrmBundle\Annotation\Ldap;
 
-class BaseAnnotation {
+class BaseAnnotation
+{
+    /**
+     * @var mixed
+     */
     protected $value;
 
     /**
@@ -16,9 +19,11 @@ class BaseAnnotation {
     {
         foreach ($data as $key => $value) {
             $method = 'set' . ucfirst($key);
+
             if (!method_exists($this, $method)) {
                 throw new \BadMethodCallException(sprintf("Unknown property '%s' on annotation '%s'.", $key, get_class($this)));
             }
+
             $this->$method($value);
         }
     }

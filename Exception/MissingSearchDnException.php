@@ -8,5 +8,9 @@
 
 namespace CarnegieLearning\LdapOrmBundle\Exception;
 
-
+/**
+ * Class MissingSearchDnException
+ * @package CarnegieLearning\LdapOrmBundle\Exception
+ * @codeCoverageIgnore
+ */
 class MissingSearchDnException extends \Exception { }
