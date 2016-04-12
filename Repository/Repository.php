@@ -37,11 +37,6 @@ class Repository {
     protected $em;
 
     /**
-     * @var
-     */
-    protected $it;
-
-    /**
      * @var ClassMetaDataCollection
      */
     private $class;
@@ -63,7 +58,6 @@ class Repository {
         $this->class = $class;
         $this->entityName = $class->name;
     }
-
 
     /**
      * Adds support for magic finders.
@@ -205,55 +199,4 @@ class Repository {
     {
         return$this->class->getSearchDn();
     }
-
-   /**
-     * Uses the new Iterator in LdapEntityManager to return the first element of a search
-     * 
-     * Returns false if there are no more objects in the iterator
-     */
-    public function itFindFirst($varname = false, $value = false) {
-        if (empty($this->it)) {
-            $this->it = $this->em->getIterator($this->getFilter($varname, $value), $this->entityName);
-        }
-        return $this->it->first();
-    }
-
-    /**
-     * Uses the new Iterator in LdapEntityManager to return the next element of a search
-     * 
-     * Returns false if there are no more objects in the iterator
-     */
-    public function itGetNext($varname = false, $value = false) {
-        if (empty($this->it)) {
-            $this->it = $this->em->getIterator($this->getFilter($varname, $value), $this->entityName);
-        }
-        return $this->it->next();
-    }
-
-    /**
-     * Verify that we are at the beggining of the iterator
-     *
-     * @return boolean 
-     */
-    public function itBegins() {
-        return isset($this->it) ? $this->it->isFirst() : false;
-    }
-
-    /**
-     * Verify that we are at the end of the iterator
-     *
-     * @return boolean 
-     */
-    public function itEnds() {
-        return isset($this->it) ? $this->it->isLast() : false;
-    }
-
-    /**
-     * Removes an iterator 
-     */
-    public function itReset() {
-        unset($this->it);
-    }
-    
-    
 }

@@ -1,6 +1,7 @@
 <?php
 namespace CarnegieLearning\LdapOrmBundle\Tests;
 
+use CarnegieLearning\LdapOrmBundle\CarnegieLearningLdapOrmBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\Kernel;
@@ -8,7 +9,6 @@ use Symfony\Bundle\MonologBundle\MonologBundle;
 
 class AppKernel extends Kernel
 {
-
     /**
      * Returns an array of bundles to register.
      *
@@ -17,8 +17,10 @@ class AppKernel extends Kernel
     public function registerBundles()
     {
         $bundles = [
-            new Symfony\Bundle\MonologBundle\MonologBundle(),
+            new CarnegieLearningLdapOrmBundle(),
+            new MonologBundle(),
         ];
+
         return $bundles;
     }
 
@@ -29,6 +31,6 @@ class AppKernel extends Kernel
      */
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
-        // TODO: Implement registerContainerConfiguration() method.
+        $loader->load($this->getRootDir().'/Fixtures/config_'.$this->getEnvironment().'.yml');
     }
 }

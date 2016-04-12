@@ -29,49 +29,14 @@ namespace CarnegieLearning\LdapOrmBundle\Mapping;
 class ClassMetaDataCollection
 {
     /**
-     * @var array
-     */
-    private $metadatas;
-
-    /**
-     * @var string
-     */
-    private $repository;
-
-    /**
-     * @var string
-     */
-    public $name;
-
-    /**
      * @var array string
      */
     public $arrayOfLink;
 
     /**
-     * @var string
+     * @var array
      */
-    public $sequences;
-
-    /**
-     * @var array string
-     */
-    public $dnRegex;
-
-    /**
-     * @var array string
-     */
-    public $parentLink;
-
-    /**
-     * @var string
-     */
-    public $objectClass;
-
-    /**
-     * @var string
-     */
-    public $searchDn;
+    public $arrayField;
 
     /**
      * @var string
@@ -79,9 +44,9 @@ class ClassMetaDataCollection
     public $dn;
 
     /**
-     * @var array
+     * @var array string
      */
-    public $arrayField;
+    public $dnRegex;
 
     /**
      * @var array
@@ -91,21 +56,62 @@ class ClassMetaDataCollection
     /**
      * @var array
      */
+    private $metadatas;
+
+    /**
+     * @var string
+     */
+    public $name;
+
+    /**
+     * @var string
+     */
+    public $objectClass;
+
+    /**
+     * @var array
+     */
     public $operational;
+
+    /**
+     * @var array string
+     */
+    public $parentLink;
+
+    /**
+     * @var string
+     */
+    private $repository;
+
+    /**
+     * @var string
+     */
+    public $sequences;
+
+    /**
+     * @var string
+     */
+    public $searchDn;
+
+    /**
+     * @var array
+     */
+    public $sequence;
 
     /**
      * ClassMetaDataCollection constructor.
      */
     public function __construct()
     {
-        $this->metadatas        = array();
-        $this->reverseMetadatas = array();
+        $this->arrayField       = array();
         $this->arrayOfLink      = array();
         $this->dnRegex          = array();
-        $this->parentLink       = array();
-        $this->arrayField       = array();
+        $this->metadatas        = array();
         $this->must             = array();
         $this->operational      = array();
+        $this->parentLink       = array();
+        $this->reverseMetadatas = array();
+        $this->sequence         = array();
     }
 
     /**

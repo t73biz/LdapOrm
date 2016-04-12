@@ -182,10 +182,10 @@ class Converter
      * The date-entity <var>$date</var> can be either a timestamp, a
      * DateTimeDecorator Object, a string that is parseable by strtotime().
      *
-     * @param integer|string|DateTime|DateTimeDecorator $date The date-entity
+     * @param integer|string|\DateTime|DateTimeDecorator $date The date-entity
      * @param boolean $asUtc Whether to return the LDAP-compatible date-string as UTC or as local value
      * @return string
-     * @throws \InvalidArgumentException
+     * @throws \Exception
      */
     public static function toLdapDateTime($date, $asUtc = true)
     {
@@ -196,10 +196,10 @@ class Converter
             } elseif (is_string($date) || $date instanceof \DateTime) {
                 $date = new DateTimeDecorator($date);
             } else {
-                throw new Exception('Parameter $date is not of the expected type');
+                throw new \Exception('Parameter $date is not of the expected type');
             }
         }
-        if (true === $asUtc) {
+        if ($asUtc) {
             $date->setTimezone(new \DateTimeZone('UTC'));
         }
 

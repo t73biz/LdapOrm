@@ -27,6 +27,7 @@ class CarnegieLearningLdapOrmExtension extends Extension
                 'The "uri" argument must be set for the ldap client.'
             );
         }
+
         $container->setParameter('carnegie_learning_ldap_orm.connection.uri', $config['connection']['uri']);
         $container->setParameter('carnegie_learning_ldap_orm.connection.bind_dn', $config['connection']['bind_dn']);
         $container->setParameter('carnegie_learning_ldap_orm.connection.password', $config['connection']['password']);
@@ -48,7 +49,5 @@ class CarnegieLearningLdapOrmExtension extends Extension
         $container->setParameter('ldap_server.port', $config['port']);
         $container->setParameter('ldap_server.base_dn', $config['base_dn']);
         $container->setParameter('ldap_server.ldif', $config['ldif']);
-        AnnotationRegistry::registerFile(__DIR__ . '/../Annotation/Ldap/Mapping/LdapAnnotations.php');
-        AnnotationRegistry::registerAutoloadNamespace('CarnegieLearning\LdapOrmBundle\Annotation\Ldap', __DIR__ . '/../Annotation/Ldap');
     }
 }

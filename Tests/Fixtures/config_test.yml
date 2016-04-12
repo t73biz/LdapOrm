@@ -1,0 +1,6 @@
+carnegie_learning_ldap_orm:
+    #Ldap Configuration
+    connection:
+        uri: ldap://localhost:1234
+        bind_dn: ~
+        password: ~

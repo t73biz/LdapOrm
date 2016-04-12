@@ -1,31 +1,12 @@
 <?php
-/***************************************************************************
- * Copyright (C) 1999-2012 Gadz.org                                        *
- * http://opensource.gadz.org/                                             *
- *                                                                         *
- * This program is free software; you can redistribute it and/or modify    *
- * it under the terms of the GNU General Public License as published by    *
- * the Free Software Foundation; either version 2 of the License, or       *
- * (at your option) any later version.                                     *
- *                                                                         *
- * This program is distributed in the hope that it will be useful,         *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of          *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the            *
- * GNU General Public License for more details.                            *
- *                                                                         *
- * You should have received a copy of the GNU General Public License       *
- * along with this program; if not, write to the Free Software             *
- * Foundation, Inc.,                                                       *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                   *
- ***************************************************************************/
- 
 namespace CarnegieLearning\LdapOrmBundle\Ldap;
 
+use CarnegieLearning\LdapOrmBundle\Entity\Ldap\LdapEntity;
+use CarnegieLearning\LdapOrmBundle\Exception\MissingGetterException;
 use CarnegieLearning\LdapOrmBundle\Exception\MissingMustAttributeException;
 use CarnegieLearning\LdapOrmBundle\Exception\MissingSearchDnException;
 use DateTime;
 use Doctrine\Common\Annotations\Reader;
-use Doctrine\ORM\EntityRepository;
 use Exception;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\ArrayField;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Attribute;
@@ -39,7 +20,6 @@ use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Repository as RepositoryAttri
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\SearchDn;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Operational;
 use CarnegieLearning\LdapOrmBundle\Annotation\Ldap\Sequence;
-use CarnegieLearning\LdapOrmBundle\Components\GenericIterator;
 use CarnegieLearning\LdapOrmBundle\Entity\DateTimeDecorator;
 use CarnegieLearning\LdapOrmBundle\Ldap\Filter\LdapFilter;
 use CarnegieLearning\LdapOrmBundle\Mapping\ClassMetaDataCollection;
@@ -57,9 +37,9 @@ use Symfony\Bridge\Monolog\Logger;
 class LdapEntityManager
 {
     /**
-     *
+     * Constant Paging limits
      */
-    const DEFAULT_MAX_RESULT_COUNT      = 100;
+    const DEFAULT_MAX_RESULT_COUNT = 100;
 
     /**
      * @var string
@@ -75,11 +55,6 @@ class LdapEntityManager
      * @var Reader
      */
     private $reader;
-
-    /**
-     * @var null
-     */
-    private $iterator = Null;
 
     /**
      * @var Client
@@ -313,11 +288,6 @@ class LdapEntityManager
         return $arrayInstance;
     }
 
-    public function renderString($string, $vars)
-    {
-        return $this->twig->render($string, $vars);
-    }
-
     /**
      * Build a DN for an entity with the use of dn annotation
      * 
@@ -346,15 +316,16 @@ class LdapEntityManager
 
     /**
      * Persist an instance in Ldap
-     * @param unknown_type $entity
+     * @param LdapEntity $entity
      * @param bool $checkMust
      * @throws MissingMustAttributeException
      */
-    public function persist($entity, $checkMust = true)
+    public function persist(LdapEntity $entity, $checkMust = true)
     {
         if ($checkMust) {
             $this->checkMust($entity);
         }
+
         $entry= $this->entityToEntry($entity);
         $this->logger->info('to array : ' . serialize($entry));
 
@@ -431,15 +402,18 @@ class LdapEntityManager
      *
      * @param string $entityName The name of the entity.
      * 
-     * @return EntityRepository The repository class.
+     * @return Repository The repository class.
      */
     public function getRepository($entityName)
     {
         $metadata = $this->getClassMetadata($entityName);
+
         if($metadata->getRepository()) {
             $repository = $metadata->getRepository();
+
             return new $repository($this, $metadata);
         }
+
         return new Repository($this, $metadata);
     }
 
@@ -447,22 +421,32 @@ class LdapEntityManager
     /**
      * Check the MUST attributes for the given object according to its LDAP
      * objectClass. If all MUST attributes are satisfied checkMust() will return
-     * a boolean true, otherwise it returns the offending attribute name.
+     * a boolean true
+     *
      * @param $instance
-     * @return TRUE or the name of the offending attribute
+     *
+     * @return bool
+     *
+     * @throws MissingGetterException
      * @throws MissingMustAttributeException
      */
     public function checkMust($instance) {
-        $emptyAttribute = null;
         $classMetaData = $this->getClassMetaData(get_class($instance));
         
         foreach ($classMetaData->getMust() as $mustAttributeName => $existence) {
             $getter = 'get'.ucfirst($mustAttributeName);
+
+            if (!method_exists($instance, $getter)) {
+                throw new MissingGetterException($mustAttributeName);
+            }
+
             $value = $instance->$getter();
+
             if (empty($value)) {
                 throw new MissingMustAttributeException($mustAttributeName);
             }
         }
+
         return true;
     }
 
@@ -470,8 +454,8 @@ class LdapEntityManager
     /**
      * Persist an array using ldap function
      * 
-     * @param unknown_type $dn
-     * @param array        $arrayInstance
+     * @param string $dn
+     * @param array  $arrayInstance
      */
     private function ldapPersist($dn, Array $arrayInstance)
     {
@@ -487,7 +471,7 @@ class LdapEntityManager
     /**
      * Splits modified and removed attributes and make sure they are compatible with ldap_modify & insert
      *
-     * @param array        $entry
+     * @param array $entry
      * 
      * @return array
      */
@@ -568,15 +552,23 @@ class LdapEntityManager
      *
      * Options maybe:
      *
-     * attributes (array): array of attribute types (strings)
-     * filter (LdapFilter): a filter array or a correctly formatted filter string
-     * max (integer): the maximum limit of entries to return
-     * searchDn (string): the search DN
-     * subentryNodes (array): parameters for the left hand side of a searchDN, useful for mining subentries.
-     * pageSize (integer): employ pagination and return pages of the given size
-     * pageCookie (opaque): The opaque stucture sent by the LDAP server to maintain pagination state. Defaults is empty string.
-     * pageCritical (boolean): if pagination employed, force paging and return no results on service which do not provide it. Default is true.
-     * checkOnly (boolean): Only check result existence; don't convert search results to Symfony entities. Default is false.
+     *      attributes (array): array of attribute types (strings)
+     *
+     *      filter (LdapFilter): a filter array or a correctly formatted filter string
+     *
+     *      max (integer): the maximum limit of entries to return
+     *
+     *      searchDn (string): the search DN
+     *
+     *      subentryNodes (array): parameters for the left hand side of a searchDN, useful for mining subentries.
+     *
+     *      pageSize (integer): employ pagination and return pages of the given size
+     *
+     *      pageCookie (opaque): The opaque stucture sent by the LDAP server to maintain pagination state. Default is empty string.
+     *
+     *      pageCritical (boolean): if pagination employed, force paging and return no results on service which do not provide it. Default is true.
+     *
+     *      checkOnly (boolean): Only check result existence; don't convert search results to Symfony entities. Default is false.
      *
      * @param string $entityName
      * @param array $options
@@ -586,6 +578,7 @@ class LdapEntityManager
     public function retrieve($entityName, $options = array())
     {
         $paging = !empty($options['pageSize']);
+        
         $instanceMetadataCollection = $this->getClassMetadata($entityName);
 
         // Discern max result size
@@ -699,13 +692,13 @@ class LdapEntityManager
     }
 
 
-
     /**
      * retrieve object from dn
      *
-     * @param string     $dn
-     * @param string     $entityName
-     * @param integer    $max
+     * @param string $dn
+     * @param string $entityName
+     * @param integer $max
+     * @param string $objectClass
      *
      * @return array
      */
@@ -772,49 +765,37 @@ class LdapEntityManager
             0);
     }
 
-    public function getIterator(LdapFilter $filter, $entityName) {
-        if (empty($this->iterator)) {
-            $this->iterator = new LdapIterator($filter, $entityName, $this);
-        }
-        return $this->iterator;
-    }
-
-
-    public function cleanArray($array)
-    {  
-        $newArray = array();
-        foreach(array_keys($array) as $key) {
-            $newArray[strtolower($key)] = $array[$key];
-        }
-
-        return $newArray;
-    }
-
-
     public function entryToEntity($entityName, $entryData)
     {
 
         $instanceMetadataCollection = $this->getClassMetadata($entityName);
+        $cleanData = [];
+        foreach(array_keys($entryData) as $key) {
+            $cleanData[strtolower($key)] = $entryData[$key];
+        }
 
-        $entryData = $this->cleanArray($entryData);
-        $dn = $entryData['dn'];
+        $dn = $cleanData['dn'];
+        /**
+         * @var LdapEntity $entity
+         */
         $entity = new $entityName();
         $metaDatas = $instanceMetadataCollection->getMetadatas();
 
         // The 'cn' attribite is at the heart of LDAP entries and entities and is often required for
-        // many other processes. Make this this gets applied from the entry to the entity first.
-        if (!empty($entryData['cn'][0])) {
-            $entity->setCn($entryData['cn'][0]);
+        // many other processes. Make sure this gets applied from the entry to the entity first.
+        if (!empty($cleanData['cn'][0])) {
+            $entity->setCn($cleanData['cn'][0]);
         }
+        
         foreach($metaDatas as $attrName => $attrValue) {
             $attrValue = strtolower($attrValue);
             if($instanceMetadataCollection->isArrayOfLink($attrName))
             {
                 $entityArray = array();
-                if(!isset($entryData[$attrValue])) {
-                    $entryData[$attrValue] = array('count' => 0);
+                if(!isset($cleanData[$attrValue])) {
+                    $cleanData[$attrValue] = array('count' => 0);
                 }
-                $linkArray = $entryData[$attrValue];
+                $linkArray = $cleanData[$attrValue];
                 $count = $linkArray['count'];
                 for($i = 0; $i < $count; $i++) {
                     if($linkArray[$i] != null) {
@@ -826,22 +807,22 @@ class LdapEntityManager
                 $entity->$setter($entityArray);
             } else {
                 $setter = 'set' . ucfirst($attrName);
-                if (!isset($entryData[$attrValue])) {
+                if (!isset($cleanData[$attrValue])) {
                     continue; // Don't set the atribute if not exit
                 }
                 try {
-                    if(preg_match('/^\d{14}/', $entryData[$attrValue][0])) {
+                    if(preg_match('/^\d{14}/', $cleanData[$attrValue][0])) {
                         if ($this->client->getIsActiveDirectory()) {
-                            $datetime = Converter::fromAdDateTime($entryData[$attrValue][0], false);
+                            $datetime = Converter::fromAdDateTime($cleanData[$attrValue][0], false);
                         } else {
-                            $datetime = Converter::fromLdapDateTime($entryData[$attrValue][0], false);
+                            $datetime = Converter::fromLdapDateTime($cleanData[$attrValue][0], false);
                         }
                         $entity->$setter($datetime);
                     } elseif ($instanceMetadataCollection->isArrayField($attrName)) {
-                        unset($entryData[$attrValue]["count"]);
-                        $entity->$setter($entryData[$attrValue]);
+                        unset($cleanData[$attrValue]["count"]);
+                        $entity->$setter($cleanData[$attrValue]);
                     } else {
-                        $entity->$setter($entryData[$attrValue][0]);
+                        $entity->$setter($cleanData[$attrValue][0]);
                     }
                 } catch (Exception $e) {
                     $this->logger->err(sprintf("Exception in ldap to entity mapping : %s", $e->getMessage()));
@@ -849,7 +830,7 @@ class LdapEntityManager
            }
         }
         foreach($instanceMetadataCollection->getDnRegex() as $attrName => $regex) {
-            preg_match_all($regex, $entryData['dn'], $matches);
+            preg_match_all($regex, $cleanData['dn'], $matches);
             $setter = 'set' . ucfirst($attrName);
             $entity->$setter($matches[1]);
         }

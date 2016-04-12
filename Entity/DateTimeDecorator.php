@@ -31,23 +31,38 @@ namespace CarnegieLearning\LdapOrmBundle\Entity;
  */
 class DateTimeDecorator
 {
+    /**
+     * @var \DateTime
+     */
     protected $_instance;
-    
-    private $format = 'YmdHisO'; // default for ldap
 
+    /**
+     * Default format for LDAP
+     *
+     * @var string
+     */
+    private $format;
+
+    /**
+     * @return string
+     */
     public function __toString() {
         return $this->_instance->format($this->format);
     }
-    
+
+    /**
+     * @param $format
+     */
     public function setFormat($format) {
         $this->format = $format;
     }
 
     /**
      * Decorator of a DateTime object (adding __toString() and setFormat method)
-     * @param  string|DateTime  $datetime
+     * @param  string|\DateTime  $datetime
      */
     public function __construct($datetime) {
+        $this->format = 'YmdHisO';
         if ($datetime instanceof \DateTime) {
             $this->_instance = $datetime;
         }
@@ -56,14 +71,28 @@ class DateTimeDecorator
         }
     }
 
+    /**
+     * @param $method
+     * @param $args
+     * @return mixed
+     */
     public function __call($method, $args) {
         return call_user_func_array(array($this->_instance, $method), $args);
     }
 
+    /**
+     * @param $key
+     * @return mixed
+     */
     public function __get($key) {
         return $this->_instance->$key;
     }
 
+    /**
+     * @param $key
+     * @param $val
+     * @return mixed
+     */
     public function __set($key, $val) {
         return $this->_instance->$key = $val;
     }

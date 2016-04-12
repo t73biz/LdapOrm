@@ -21,7 +21,7 @@ module.exports = function(grunt) {
         exec: {
             ldap: {
                 command: function() {
-                    return './Tests/UnboundServer/tools/in-memory-directory-server --port=1234 --baseDN "dc=example,dc=com" --ldiffile Tests/UnboundServer/sample.ldif &';
+                    return './Resources/ldap/tools/in-memory-directory-server --port=1234 --baseDN "dc=example,dc=com" --ldiffile Resources/ldap/sample.ldif &';
                 }
             }
         },
@@ -29,7 +29,11 @@ module.exports = function(grunt) {
             scripts: {
                 files: [
                     '**/*.php',
-                    'Tests/**/*.php',
+                    'Tests/Entity/Ldap/*.php',
+                    'Tests/Fixtures/*.php',
+                    'Tests/Ldap/*.php',
+                    'Tests/Ldap/Filter*.php',
+                    '!Tests/cache/**/*.php',
                     'Resources/**/*.yml'
                 ],
                 tasks: ['phpunit'],
